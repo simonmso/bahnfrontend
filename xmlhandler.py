@@ -1,5 +1,7 @@
+# ok I know it would have been way easier to use xml.etree.ElementTree but I wanted to try and write my own
+# and now it works
+
 def parseXML (xml):
-    # print('xml', xml)
     txt = xml.strip()
 
     # remove opening xml tag
