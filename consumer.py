@@ -40,10 +40,10 @@ def getPlan (evaNo):
     return timetable['children']
 
 def getAllChanges (evaNo):
-    return request(f"/fchg/{evaNo}")
+    return request(f"/fchg/{evaNo}")[0]['children']
 
 def getRecentChanges (evaNo):
-    return request(f"/rchg/{evaNo}")
+    return request(f"/rchg/{evaNo}")[0]['children']
 
 def getStation (pattern):
     return request(f"/station/{pattern}")
