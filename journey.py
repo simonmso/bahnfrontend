@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta, timezone
+import random
 import consumer
+from knownStations import knownStations
 
 
 def formatTimetableStops (stops):
@@ -17,18 +19,18 @@ def formatTimetableStops (stops):
         # there is definitely a more elegant way of writing this
         for child in stop['children']:
             if child['type'] == 'tl':
-                if 'c' in child['data']: formatted['catagory'] = child['data']['c']
+                if 'c' in child['data']: formatted['category'] = child['data']['c']
                 if 'n' in child['data']: formatted['number'] = child['data']['n']
             elif child['type'] == 'dp':
-                if 'pt' in child['data']: formatted['plannedDepartureTime'] = datetime.strptime(child['data']['pt'], '%y%m%d%H%M')
-                if 'ct' in child['data']: formatted['departureTime'] = datetime.strptime(child['data']['ct'], '%y%m%d%H%M')
+                if 'pt' in child['data']: formatted['plannedDepartureTime'] = datetime.strptime(f"{child['data']['pt']}+0200", '%y%m%d%H%M%z')
+                if 'ct' in child['data']: formatted['departureTime'] = datetime.strptime(f"{child['data']['ct']}+0200", '%y%m%d%H%M%z')
                 if 'ppth' in child['data']: formatted['futureStops'] = child['data']['ppth'].split('|')
                 if 'cpth' in child['data']: formatted['futureStops'] = child['data']['cpth'].split('|')
                 if 'l' in child['data']: formatted['line'] = child['data']['l']
                 if 'cs' in child['data']: formatted['cancelled'] = child['data']['cs'] == 'c'
             elif child['type'] == 'ar':
-                if 'pt' in child['data']: formatted['plannedArrivalTime'] = datetime.strptime(child['data']['pt'], '%y%m%d%H%M')
-                if 'ct' in child['data']: formatted['arrivalTime'] = datetime.strptime(child['data']['ct'], '%y%m%d%H%M')
+                if 'pt' in child['data']: formatted['plannedArrivalTime'] = datetime.strptime(f"{child['data']['pt']}+0200", '%y%m%d%H%M%z')
+                if 'ct' in child['data']: formatted['arrivalTime'] = datetime.strptime(f"{child['data']['ct']}+0200", '%y%m%d%H%M%z')
                 if 'ppth' in child['data']: formatted['previousStops'] = child['data']['ppth'].split('|')
                 if 'cpth' in child['data']: formatted['previousStops'] = child['data']['cpth'].split('|')
                 if 'l' in child['data']: formatted['line'] = child['data']['l']
@@ -72,7 +74,13 @@ def updateWithDelays(stops, evaNo):
 
 
 def findStopInStation (tripId, station, baseTime):
-    station = consumer.getStation(station)['data']
+    eva = ''
+    if station in knownStations: eva = knownStations[station]
+    else:
+        stationResult = consumer.getStation(station)
+        if stationResult == None: return None
+        eva = stationResult['data']['eva']
+
     testingTime = baseTime
     foundStop = False
     i = 0
@@ -80,10 +88,10 @@ def findStopInStation (tripId, station, baseTime):
         if i >= 24:
             print("did not find arrival in the next 24 hours")
             break
-        arrivalsAtEnd = formatTimetableStops(consumer.getArrivals(station['eva'], testingTime))
+        arrivalsAtEnd = formatTimetableStops(consumer.getArrivals(eva, testingTime))
         for (i, arrival) in enumerate(arrivalsAtEnd):
             if tripId == arrival['tripId']:
-                trueArrivals = updateWithDelays(arrivalsAtEnd, station['eva']) # updates with delays here to minimize requests
+                trueArrivals = updateWithDelays(arrivalsAtEnd, eva) # updates with delays here to minimize requests
                 foundStop = trueArrivals[i]
         if foundStop: break
 
@@ -97,12 +105,27 @@ def buildJourneyFromStop (stop):
     journey = [stop]
     for station in stop['futureStops']:
         foundStop = findStopInStation(stop['tripId'], station, earliestStopTime)
-        foundStop['name'] = station
-        earliestStopTime = foundStop['arrivalTime']
-        journey.append(foundStop)
+        if (foundStop):
+            foundStop['name'] = station
+            earliestStopTime = foundStop['arrivalTime']
+            journey.append(foundStop)
         
     return journey
 
+
+def filterStopsByRelevant (stops):
+    discludeReasons = {
+        'category': 'FEX', # Berlin S-Bahn to airport
+        'category': 'FLX', # I don't think these have the correct stop data
+        'cancelled': True,
+    }
+    newStops = []
+    for stop in stops:
+        includeStop = True
+        for (key, value) in discludeReasons.items():
+            if key in stop and stop[key] == value: includeStop = False
+        if includeStop: newStops.append(stop)
+    return newStops
 
 
 def findSoonestDepartureForStation (evaNo):
@@ -112,34 +135,36 @@ def findSoonestDepartureForStation (evaNo):
     while True:
         time = time + timedelta(hours=1)
         departuresFromStation = departuresFromStation + formatTimetableStops(consumer.getDepartures(evaNo, time))
+        if len(departuresFromStation):
+            departuresFromStation = updateWithDelays(departuresFromStation, evaNo)
+            departuresFromStation = filterStopsByRelevant(departuresFromStation) # this could remove all stops (if every train that hour was cancelled, for ex.)
         if len(departuresFromStation): break
+            
 
-    departuresFromStation = updateWithDelays(departuresFromStation, evaNo)
-    # TODO: exclude cancelled trains
-
-    # different from 'time' above b/c we need to compare naive time later
-    currTime = datetime.now() + timedelta(hours=8)
+    # different from 'time' above b/c we need to compare naive
+    now = datetime.now(timezone(timedelta(hours=2)))
 
     nearestStop = departuresFromStation[0]
     for stop in departuresFromStation:
-        current = abs(currTime - nearestStop['departureTime'])
-        testing = abs(currTime - stop['departureTime'])
+        current = abs(now - nearestStop['departureTime'])
+        testing = abs(now - stop['departureTime'])
         if testing < current:
             nearestStop = stop
 
-    if 'line' in nearestStop: print('\nfound nearest stop:', nearestStop['id'], nearestStop['departureTime'], nearestStop['catagory'], nearestStop['line'], 'towards:', nearestStop['futureStops'][-1], '\n')
+    if 'line' in nearestStop: print('\nfound nearest stop:', nearestStop['id'], nearestStop['departureTime'], nearestStop['category'], nearestStop['line'], 'towards:', nearestStop['futureStops'][-1], '\n')
     else: print('nearestStop', nearestStop)
     return nearestStop
 
 
 def main ():
-
-    evaNo = 8011160 # berlin hbf
+    # evaNo = 8011160 # berlin hbf
     # evaNo = 8000237 # luebeck hbf
+    (name, evaNo) = random.choice(list(knownStations.items()))
 
     nearestStop = findSoonestDepartureForStation(evaNo)
-    nearestStop['name'] = 'berlin'
+    # nearestStop['name'] = 'berlin'
     # nearestStop['name'] = 'lubeck'
+    nearestStop['name'] = name
     journey = buildJourneyFromStop(nearestStop)
 
     print('\njourney:')

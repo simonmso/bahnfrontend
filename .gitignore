@@ -1,2 +1,5 @@
 /keys.py
 __pycache__
+.vscode
+buildKnownStations.py
+reduced.csv

@@ -41,7 +41,9 @@ def getRecentChanges (evaNo):
     return request(f"/rchg/{evaNo}")[0]['children']
 
 def getStation (pattern):
-    return request(f"/station/{urllib.parse.quote(pattern)}")[0]['children'][0]
+    stations = request(f"/station/{urllib.parse.quote(pattern)}")[0]['children']
+    if len(stations): return stations[0]
+    else: print('\ncould not find station:', pattern, '\n')
 
 
 def __getDeparturesOrArrivals__ (evaNo, time, dpOrAr="dp"):
