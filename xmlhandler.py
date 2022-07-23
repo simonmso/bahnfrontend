@@ -2,6 +2,7 @@
 # and now it works
 
 def parseXML (xml):
+    if len(xml) == 0: return []
     txt = xml.strip()
 
     # remove opening xml tag
@@ -14,7 +15,7 @@ def parseXML (xml):
     while len(txt.strip()) > 0:
         [elementStr, _, txt] = txt.partition('>')
         
-        [tag, _, elementStr] = elementStr.strip().partition(' ')
+        [tag, _, elementDataStr] = elementStr.strip().partition(' ')
         tag = tag[1:] # remove '<'
 
         element = {
@@ -24,13 +25,13 @@ def parseXML (xml):
         }
 
         end = ''
-        if elementStr[-1] == '/':
+        if len(elementDataStr) and elementDataStr[-1] == '/':
             end = '/>'
-            elementStr = elementStr.strip('/')
+            elementDataStr = elementDataStr.strip('/')
         else:
             end = '>'
         
-        dataArr = elementStr.strip().split('\"')
+        dataArr = elementDataStr.strip().split('\"')
         for i in range(len(dataArr) // 2): # interperate the element's keys and values
             j = i * 2
             key = dataArr[j].strip(' ').strip('=')

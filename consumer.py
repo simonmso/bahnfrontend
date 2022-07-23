@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 import http.client
+import urllib.parse
 import html
 from keys import DBApiKey, DBClientID
 from xmlhandler import parseXML
@@ -17,27 +18,21 @@ def request (endpoint):
     }
 
     conn.request("GET", url, headers=headers)
+    print('request sent:', endpoint)
 
     res = conn.getresponse()
     data = res.read()
     return parseXML(html.unescape(data.decode("utf=8")))
 
-def getPlan (evaNo):
-    # datetime in germany
-    now = datetime.now(timezone(timedelta(hours=2)))
-    date = now.strftime("%y%m%d")
-    hour = now.strftime("%H")
-    timetable = request(f"/plan/{evaNo}/{date}/{hour}")[0]
+def getPlanForTime (evaNo, timeArg=None):
+    time = timeArg
+    if not time: time = datetime.now(timezone(timedelta(hours=2)))
 
-    # if less than 30 minutes until the next hour (ex. 1:45), get the next hour's timetable as well
-    if int(now.strftime('%M')) > 30:
-        nextHour = now + timedelta(hours=1)
-        date = nextHour.strftime("%y%m%d")
-        hour = nextHour.strftime('%H')
-        timetable2 = request(f"/plan/{evaNo}/{date}/{hour}")[0]
-        timetable['children'] = timetable['children'] + timetable2['children']
+    # datetime in germany
+    date = time.strftime("%y%m%d")
+    hour = time.strftime("%H")
     
-    return timetable['children']
+    return request(f"/plan/{evaNo}/{date}/{hour}")[0]['children']
 
 def getAllChanges (evaNo):
     return request(f"/fchg/{evaNo}")[0]['children']
@@ -46,11 +41,11 @@ def getRecentChanges (evaNo):
     return request(f"/rchg/{evaNo}")[0]['children']
 
 def getStation (pattern):
-    return request(f"/station/{pattern}")
+    return request(f"/station/{urllib.parse.quote(pattern)}")[0]['children'][0]
 
 
-def __getDeparturesOrArrivals__ (evaNo, dpOrAr):
-    stops = getPlan(evaNo)
+def __getDeparturesOrArrivals__ (evaNo, time, dpOrAr="dp"):
+    stops = getPlanForTime(evaNo, timeArg=time)
     matching = []
     for stop in stops:
         for child in stop['children']:
@@ -60,9 +55,9 @@ def __getDeparturesOrArrivals__ (evaNo, dpOrAr):
     
     return matching
 
-def getDepartures (evaNo):
-    return __getDeparturesOrArrivals__(evaNo, 'dp')
+def getDepartures (evaNo, time=None):
+    return __getDeparturesOrArrivals__(evaNo, time=time, dpOrAr='dp')
 
-def getArrivals (evaNo):
-    return __getDeparturesOrArrivals__(evaNo, 'ar')
+def getArrivals (evaNo, time=None):
+    return __getDeparturesOrArrivals__(evaNo, time=time, dpOrAr='ar')
 
