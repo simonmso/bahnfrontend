@@ -33,8 +33,8 @@ def formatTimetableStops (stops):
         'ar': {
             'pt': ['plannedArrivalTime', lambda d: datetime.strptime(f"{d}+0200", '%y%m%d%H%M%z')],
             'ct': ['arrivalTime', lambda d: datetime.strptime(f"{d}+0200", '%y%m%d%H%M%z')],
-            'ppth': ['arrivalTime', lambda s: s.split('|')],
-            'cpth': ['arrivalTime', lambda s: s.split('|')],
+            'ppth': ['previousStops', lambda s: s.split('|')],
+            'cpth': ['previousStops', lambda s: s.split('|')],
             'l': ['line', lambda a: a],
             'cs': ['cancelled', lambda c: c == 'c']
         }
@@ -69,8 +69,7 @@ def applyChangesToStops(stops, changes):
     for stop in newStops: 
         for change in changes:
             if stop['id'] == change['id']:
-                for (key, value) in change.items():
-                    stop[key] = value
+                stop.update(change)
                 break
     return newStops
 
@@ -79,9 +78,9 @@ def updateWithDelays(stops, evaNo):
     changes = formatTimetableStops(consumer.getAllChanges(evaNo))
 
     newStops = applyChangesToStops(stops, changes)
+    newStops = list(map(confirmActualTime, newStops))
 
     for stop in newStops:
-        stop = confirmActualTime(stop)
         stop['eva'] = evaNo
     
     return newStops
@@ -92,7 +91,7 @@ def getEvaForStationName (station):
     if station in knownStations: eva = knownStations[station]
     else:
         stationResult = consumer.getStation(station)
-        if stationResult == None: return None
+        if stationResult == None: return
         eva = stationResult['data']['eva']
     return eva
 
@@ -140,24 +139,6 @@ def buildJourneyFromStop (stop):
     return journey
 
 
-def filterStopsByRelevant (stops):
-    discludeReasons = [
-        ['cancelled', True],
-    ]
-    includedCategories = ["RE", "IC", "ICE"]
-    newStops = []
-    for stop in stops:
-        includeStop = True
-        approvedCatagory = stop['category'] in includedCategories
-        # for 3rd party opperated trains, the category is in the line, ex: { 'category': 'ME', 'line': 'RE3' }
-        approvedLine = 'line' in stop and stop['line'].strip('1234567890') in includedCategories
-        includeStop = approvedCatagory or approvedLine
-        for (key, value) in discludeReasons:
-            if key in stop and stop[key] == value: includeStop = False
-        if includeStop: newStops.append(stop)
-    return newStops
-
-
 def stopString (stop):
     keys = ['id', 'departureTime', 'category', 'line']
     ret = ''
@@ -167,14 +148,24 @@ def stopString (stop):
     return ret
 
 
+def stopIsRelevant (stop):
+    if 'cancelled' in stop and stop['cancelled']: return False
+    
+    includedCategories = ["RE", "IC", "ICE"]
+    approvedCatagory = stop['category'] in includedCategories
+    # for 3rd party opperated trains, the category is in the line, ex: { 'category': 'ME', 'line': 'RE3' }
+    approvedLine = 'line' in stop and stop['line'].strip('1234567890') in includedCategories
+    return approvedCatagory or approvedLine
+
+
 def findSoonestDepartureForStation (evaNo):
     now = datetime.now(timezone(timedelta(hours=2)))
 
     departuresFromStation = formatTimetableStops(consumer.getDepartures(evaNo, now))
     departuresFromStation = departuresFromStation + formatTimetableStops(consumer.getDepartures(evaNo, now + timedelta(hours=1)))
     departuresFromStation = updateWithDelays(departuresFromStation, evaNo)
+    departuresFromStation = list(filter(stopIsRelevant, departuresFromStation))
 
-    departuresFromStation = filterStopsByRelevant(departuresFromStation)
 
     if not len(departuresFromStation):
         return None        
@@ -191,8 +182,8 @@ def findSoonestDepartureForStation (evaNo):
 
 
 def main ():
-    # evaNo = 8000801
-    # name = "Bardowick"
+    # evaNo = 8098160
+    # name = "Berlin Hbf"
     (name, evaNo) = random.choice(list(knownStations.items()))
     nearestStop = findSoonestDepartureForStation(evaNo)
 
@@ -201,6 +192,10 @@ def main ():
         print('\nNo nearterm stops for', name, '\n')
         (name, evaNo) = random.choice(list(knownHbfs.items()))
         nearestStop = findSoonestDepartureForStation(evaNo)
+
+    if not nearestStop:
+        print("No nearterm stops found for any station")
+        return None
 
     nearestStop['name'] = name
     journey = buildJourneyFromStop(nearestStop)
