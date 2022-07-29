@@ -3,3 +3,6 @@ __pycache__
 .vscode
 buildKnownStations.py
 reduced.csv
+/js/package*
+.eslintrc*
+node_modules
