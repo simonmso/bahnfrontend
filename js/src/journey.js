@@ -1,5 +1,7 @@
 import { Temporal } from "@js-temporal/polyfill";
 import { getPlanForTime, getChanges } from "./consumer";
+import knownStations from "./knownStations.json";
+import knownHbfs from "./knownHbfs.json";
 
 const confirmActualTime = (stop) => {
   const s = { ...stop };
@@ -51,12 +53,101 @@ const findSoonestDepartureFromStation = async (evaNo) => {
   return nearestStop;
 };
 
-const getJourney = async () => {
-  const evaNo = 8011160; // berlin hbf
-  const name = "Berlin Hbf";
-  const nearest = await findSoonestDepartureFromStation(evaNo);
+const lessThanXApart = (t1, t2, x) => (
+  Temporal.Duration.compare(
+    { hours: x },
+    t1.since(t2, { smallestUnit: "hour" }).abs(),
+  ) === 1
+);
 
-  nearest.name = name;
+const findStopInStation = async (tripId, stationName, earliestStopTime, future = true) => {
+  let testingTime = earliestStopTime;
+  const evaNo = knownStations[stationName];
+
+  while (lessThanXApart(testingTime, earliestStopTime, 10)) {
+    // disabling because the loop should only try one plan at a time
+    // eslint-disable-next-line no-await-in-loop
+    const foundInPlan = await getPlanForTime(evaNo, testingTime)
+      .then((stops) => stops.find((s) => s.tripId === tripId));
+    if (foundInPlan) {
+      // eslint-disable-next-line no-await-in-loop
+      const stop = (await updateWithDelays([foundInPlan], evaNo))[0];
+      stop.name = stationName;
+      return stop;
+    }
+    testingTime = future
+      ? testingTime.add({ hours: 1 })
+      : testingTime.subtract({ hours: 1 });
+  }
+  console.log("could not find stop in station", stationName);
+  return undefined;
+};
+
+const buildJourneyFromStop = async (stop) => {
+  let earliestStopTime = stop.departureTime;
+  const journey = [stop];
+
+  if (stop.previousStops?.length) {
+    const foundStop = await findStopInStation(
+      stop.tripId,
+      stop.previousStops[0],
+      earliestStopTime,
+      false, // search the past for the stop
+    );
+    if (foundStop) { journey.splice(0, 0, foundStop); }
+  }
+
+  // not using Promise.all or .forEach because I want each request to depend on
+  // the departure time of the one before it
+  for (let i = 0; i < stop.futureStops.length; i++) {
+    // eslint-disable-next-line no-await-in-loop
+    const newStop = await findStopInStation(stop.tripId, stop.futureStops[i], earliestStopTime);
+    if (newStop) {
+      earliestStopTime = newStop.departureTime;
+      journey.push(newStop);
+    }
+  }
+
+  return journey;
+};
+
+const getRandomKey = (obj) => {
+  const keys = Object.keys(obj);
+  const randIdx = Math.floor(Math.random() * keys.length);
+  return keys[randIdx];
+};
+
+const getJourney = async () => {
+  let stationName = getRandomKey(knownStations);
+  let evaNo = knownStations[stationName];
+  // const evaNo = 8011160; // berlin hbf
+  // let stationName = "Berlin Hbf";
+  let nearest = await findSoonestDepartureFromStation(evaNo);
+
+  let i = 0;
+  while (!nearest && i < 4) {
+    i++;
+    stationName = getRandomKey(knownHbfs);
+    evaNo = knownHbfs[stationName];
+    // eslint-disable-next-line no-await-in-loop
+    nearest = await findSoonestDepartureFromStation(evaNo);
+  }
+
+  if (!nearest) {
+    console.log("No journey found at this time");
+    return undefined;
+  }
+
+  nearest.name = stationName;
+
+  const journey = await buildJourneyFromStop(nearest);
+
+  console.log("journey");
+  journey.forEach((s) => {
+    console.log(s.category, s.line || s.number, s.departureTime?.toLocaleString("en-GB"), s.name);
+  });
+
+  return journey;
 };
 
 export default getJourney;

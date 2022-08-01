@@ -2,9 +2,15 @@ import { Temporal } from "@js-temporal/polyfill";
 
 const DBClientID = "319c7843f0ffd25e9df9d59bf14afe14";
 const DBApiKey = "bc235c81a107a57934a015cca40d68a5";
+let totalRequests = 0;
 
 const request = (endpoint) => {
-  console.log("requesting:", endpoint);
+  totalRequests++;
+  console.log("requesting:", totalRequests, endpoint);
+  if (totalRequests > 45) {
+    console.log("can't request more");
+    return undefined;
+  }
   const url = `https://apis.deutschebahn.com/db-api-marketplace/apis/timetables/v1${endpoint}`;
   return fetch(url, {
     headers: {
