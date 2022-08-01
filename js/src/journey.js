@@ -66,9 +66,13 @@ const findStopInStation = async (tripId, stationName, earliestStopTime, future =
 
   while (lessThanXApart(testingTime, earliestStopTime, 10)) {
     // disabling because the loop should only try one plan at a time
-    // eslint-disable-next-line no-await-in-loop
-    const foundInPlan = await getPlanForTime(evaNo, testingTime)
-      .then((stops) => stops.find((s) => s.tripId === tripId));
+    let foundInPlan;
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      foundInPlan = await getPlanForTime(evaNo, testingTime)
+        .then((stops) => stops.find((s) => s.tripId === tripId));
+    } catch { break; }
+
     if (foundInPlan) {
       // eslint-disable-next-line no-await-in-loop
       const stop = (await updateWithDelays([foundInPlan], evaNo))[0];
@@ -103,7 +107,7 @@ const buildJourneyFromStop = async (stop) => {
     // eslint-disable-next-line no-await-in-loop
     const newStop = await findStopInStation(stop.tripId, stop.futureStops[i], earliestStopTime);
     if (newStop) {
-      earliestStopTime = newStop.departureTime;
+      earliestStopTime = newStop.plannedDepartureTime;
       journey.push(newStop);
     }
   }
@@ -120,8 +124,7 @@ const getRandomKey = (obj) => {
 const getJourney = async () => {
   let stationName = getRandomKey(knownStations);
   let evaNo = knownStations[stationName];
-  // const evaNo = 8011160; // berlin hbf
-  // let stationName = "Berlin Hbf";
+  // let evaNo = 8000193;
   let nearest = await findSoonestDepartureFromStation(evaNo);
 
   let i = 0;
@@ -140,14 +143,7 @@ const getJourney = async () => {
 
   nearest.name = stationName;
 
-  const journey = await buildJourneyFromStop(nearest);
-
-  console.log("journey");
-  journey.forEach((s) => {
-    console.log(s.category, s.line || s.number, s.departureTime?.toLocaleString("en-GB"), s.name);
-  });
-
-  return journey;
+  return buildJourneyFromStop(nearest);
 };
 
 export default getJourney;

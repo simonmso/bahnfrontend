@@ -8,8 +8,7 @@ const request = (endpoint) => {
   totalRequests++;
   console.log("requesting:", totalRequests, endpoint);
   if (totalRequests > 45) {
-    console.log("can't request more");
-    return undefined;
+    throw new Error("Reached request limit (in place because the API has a 60 request limit)");
   }
   const url = `https://apis.deutschebahn.com/db-api-marketplace/apis/timetables/v1${endpoint}`;
   return fetch(url, {

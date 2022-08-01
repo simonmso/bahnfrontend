@@ -9,7 +9,6 @@ body {
 }
 #main {
     outline-style: solid;
-    outline-color: white;
+    outline-color: rgb(43, 43, 43);
     outline-width: 1px;
-    /* border- */
 }
