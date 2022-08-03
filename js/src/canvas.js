@@ -103,11 +103,15 @@ export const draw = (config) => {
 
   const nextFewStops = stops.filter((s) => inNext(s, 53, config));
 
-  const start = now;
-  const end = start.add({ minutes: 53 });
+  const lastStop = nextFewStops.find((s) => s.arrivalTime && !s.departureTime);
+  const lastMinute = now.add({ minutes: 53 });
+  const end = lastStop && (lastStop.arrivalTime.epochSeconds < lastMinute.epochSeconds)
+    ? lastStop.arrivalTime
+    : lastMinute;
+
   setGradient(config);
-  drawMinuteTicks(start, config, end);
-  nextFewStops.forEach((s) => drawStop(s, config));
+  drawMinuteTicks(now, config, end);
+  nextFewStops.forEach((s) => { if (s.show) { drawStop(s, config); } });
   drawHands(config);
   drawTrain(config);
 };

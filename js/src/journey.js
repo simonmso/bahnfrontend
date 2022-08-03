@@ -29,6 +29,10 @@ const updateWithDelays = (stops, evaNo) => (
 
 const stopIsRelevant = (s) => {
   if (s.cancelled || !s.departureTime) { return false; }
+  const now = Temporal.Now.zonedDateTimeISO("Europe/Berlin");
+  if (s.departureTime && s.departureTime.epochSeconds - now.epochSeconds > 60 * 40) {
+    return false;
+  }
   const cats = ["RE", "IC", "ICE", "EC"];
   // for 3rd party trains, the category is in the line,
   // ex: { category: 'ME', line: 'RE3' }
@@ -37,9 +41,11 @@ const stopIsRelevant = (s) => {
 
 const findSoonestDepartureFromStation = async (evaNo) => {
   const now = Temporal.Now.zonedDateTimeISO("Europe/Berlin");
-  const plan1 = getPlanForTime(evaNo);
-  const plan2 = getPlanForTime(evaNo, now.add({ hours: 1 }));
-  const relevant = await Promise.all([plan1, plan2])
+  const plans = [getPlanForTime(evaNo)];
+  if (now.minute > 20) {
+    plans.push(getPlanForTime(evaNo, now.add({ hours: 1 })));
+  }
+  const relevant = await Promise.all(plans)
     .then((r) => updateWithDelays([...r[0], ...r[1]], evaNo))
     .then((updated) => updated.filter((s) => stopIsRelevant(s)));
 
@@ -67,6 +73,10 @@ const findStopInStation = async (tripId, stationName, earliestStopTime, future =
   while (lessThanXApart(testingTime, earliestStopTime, 10)) {
     // disabling because the loop should only try one plan at a time
     let foundInPlan;
+    if (!evaNo) {
+      console.log(`could not find eva for ${stationName}`);
+      break;
+    }
     try {
       // eslint-disable-next-line no-await-in-loop
       foundInPlan = await getPlanForTime(evaNo, testingTime)
@@ -76,6 +86,7 @@ const findStopInStation = async (tripId, stationName, earliestStopTime, future =
         // eslint-disable-next-line no-await-in-loop
         const stop = (await updateWithDelays([foundInPlan], evaNo))[0];
         stop.name = stationName;
+        stop.show = true;
         return stop;
       }
     } catch { break; }
@@ -85,7 +96,11 @@ const findStopInStation = async (tripId, stationName, earliestStopTime, future =
       : testingTime.subtract({ hours: 1 });
   }
   console.log("could not find stop in station", stationName);
-  return undefined;
+  return {
+    show: false,
+    tripId,
+    name: stationName,
+  };
 };
 
 const buildJourneyFromStop = async (stop) => {
@@ -101,6 +116,8 @@ const buildJourneyFromStop = async (stop) => {
     );
     if (foundStop) { journey.splice(0, 0, foundStop); }
   }
+
+  // WORKING ON: only building the next hour of the journey out
 
   // not using Promise.all or .forEach because I want each request to depend on
   // the departure time of the one before it
