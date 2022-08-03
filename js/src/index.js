@@ -12,6 +12,5 @@ import dummy from "./dummy";
 //   });
 const config = prepCanvasConfig();
 config.stops = dummy;
-dummy.forEach((s) => console.log(s.arrivalTime?.toLocaleString("en-GB"), s.departureTime?.toLocaleString("en-GB")));
 
 setInterval(() => draw(config), 500);
