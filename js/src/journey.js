@@ -71,14 +71,15 @@ const findStopInStation = async (tripId, stationName, earliestStopTime, future =
       // eslint-disable-next-line no-await-in-loop
       foundInPlan = await getPlanForTime(evaNo, testingTime)
         .then((stops) => stops.find((s) => s.tripId === tripId));
+
+      if (foundInPlan) {
+        // eslint-disable-next-line no-await-in-loop
+        const stop = (await updateWithDelays([foundInPlan], evaNo))[0];
+        stop.name = stationName;
+        return stop;
+      }
     } catch { break; }
 
-    if (foundInPlan) {
-      // eslint-disable-next-line no-await-in-loop
-      const stop = (await updateWithDelays([foundInPlan], evaNo))[0];
-      stop.name = stationName;
-      return stop;
-    }
     testingTime = future
       ? testingTime.add({ hours: 1 })
       : testingTime.subtract({ hours: 1 });
