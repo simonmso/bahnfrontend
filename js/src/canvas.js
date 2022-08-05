@@ -79,7 +79,7 @@ const drawHands = (cfg) => {
 export const prepCanvasConfig = () => {
   const canvas = document.getElementById("main");
 
-  const width = window.innerWidth - 17; // minus value to avoid scrollbar
+  const width = window.innerWidth - 17; // -17 to avoid scrollbar
   const height = window.innerHeight - 4;
   const center = { x: width / 2, y: height / 2 };
   const radius = height / 2.5;
@@ -99,19 +99,24 @@ export const prepCanvasConfig = () => {
 
 export const draw = (config) => {
   const { stops, ctx, now } = config;
+
   ctx.clearRect(0, 0, config.width, config.height);
 
-  const nextFewStops = stops.filter((s) => inNext(s, 53, config));
+  if (!stops) {
+    drawHands(config);
+  } else {
+    const nextFewStops = stops.filter((s) => s.show && inNext(s, 53, config));
 
-  const lastStop = nextFewStops.find((s) => s.arrivalTime && !s.departureTime);
-  const lastMinute = now.add({ minutes: 53 });
-  const end = lastStop && (lastStop.arrivalTime.epochSeconds < lastMinute.epochSeconds)
-    ? lastStop.arrivalTime
-    : lastMinute;
+    const lastStop = nextFewStops.find((s) => s.arrivalTime && !s.departureTime);
+    const lastMinute = now.add({ minutes: 53 });
+    const end = lastStop && (lastStop.arrivalTime.epochSeconds < lastMinute.epochSeconds)
+      ? lastStop.arrivalTime
+      : lastMinute;
 
-  setGradient(config);
-  drawMinuteTicks(now, config, end);
-  nextFewStops.forEach((s) => { if (s.show) { drawStop(s, config); } });
-  drawHands(config);
-  drawTrain(config);
+    setGradient(config);
+    drawMinuteTicks(now, config, end);
+    nextFewStops.forEach((s) => drawStop(s, config));
+    drawHands(config);
+    drawTrain(config);
+  }
 };

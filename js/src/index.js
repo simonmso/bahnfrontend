@@ -1,31 +1,32 @@
 import { Temporal } from "@js-temporal/polyfill";
-import getJourney from "./journey";
+import { rebuildNextHour, rehydrateStops } from "./journey";
 import { prepCanvasConfig, draw } from "./canvas";
+import printStop from "./helpers";
 // import dummy from "./dummy";
 
 const main = async () => {
-  // const journey = dummy;
-  const journey = await getJourney();
+  const config = prepCanvasConfig();
 
-  if (!journey) {
-    console.log("TODO: handle no journey found");
-  } else {
-    console.log("journey", journey);
-    // console.log("journey");
-    // journey.forEach((s) => {
-    //   // console.log(s.arrivalTime?.toString(), s.departureTime?.toString());
-    //   console.log(s.category, s.line || s.number, s.departureTime?.toString(), s.name);
-    // });
+  const manageJourney = () => {
+    rebuildNextHour(config.stops)
+      .then((stops) => rehydrateStops(stops))
+      .then((upToDate) => { config.stops = upToDate; })
+      .then(() => {
+        console.log("config.stops", config.stops);
+        config.stops.forEach((s) => printStop(s));
+      })
+      .catch((e) => console.log("failed building", e));
+  };
 
-    const config = prepCanvasConfig();
-    config.stops = journey;
+  setInterval(() => {
+    config.now = Temporal.Now.zonedDateTimeISO();
+    // config.now = Temporal.Now.zonedDateTimeISO().with({ minute: 50 });
+    draw(config);
+  }, 500);
 
-    setInterval(() => {
-      config.now = Temporal.Now.zonedDateTimeISO();
-      // config.now = Temporal.Now.zonedDateTimeISO().with({ minute: 50 });
-      draw(config);
-    }, 500);
-  }
+  manageJourney();
+
+  setInterval(manageJourney, 1000 * 60 * 1.5);
 };
 
 main();
