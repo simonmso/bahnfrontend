@@ -179,7 +179,7 @@ export const rebuildNextHour = async (stops) => {
   const now = Temporal.Now.instant().epochSeconds;
   let newStops = stops?.filter((s) => {
     if (!s.real) return false;
-    const t = s.arrivalTime || s.departureTime;
+    const t = s.departureTime || s.arrivalTime;
     const diff = t.epochSeconds - now;
     return diff > 0;
   });

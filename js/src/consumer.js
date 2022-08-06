@@ -3,7 +3,7 @@ import { Temporal } from "@js-temporal/polyfill";
 const DBClientID = "319c7843f0ffd25e9df9d59bf14afe14";
 const DBApiKey = "bc235c81a107a57934a015cca40d68a5";
 let totalRequests = 0;
-const resetRequests = () => { totalRequests = 0; };
+const resetRequests = () => { console.log("req reset"); totalRequests = 0; };
 
 const request = (endpoint) => {
   if (totalRequests === 0) setTimeout(resetRequests, 1000 * 65);

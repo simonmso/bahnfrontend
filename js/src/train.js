@@ -97,16 +97,18 @@ const drawFrontWindow = (trainWidth, angle, forward, cfg) => {
 };
 
 const drawTrain = (cfg) => {
-  const { now } = cfg;
+  const { now, scaleFactor } = cfg;
   const start = getAnglesForTime(now.subtract({ minutes: 7 })).minute;
   const end = getAnglesForTime(now.subtract({ seconds: 33 })).minute;
 
-  const width = 10;
+  const width = 10 * scaleFactor;
 
   // black train outline
-  drawTrainBody(width + 2.5, start, end, cfg, "black");
-  drawTrainHead(width + 1.7, end - 0.003, true, cfg, "black");
-  drawTrainHead(width + 1.7, start + 0.003, false, cfg, "black");
+  const headoff = 2.5 * scaleFactor;
+  const bodyOff = 1.7 * scaleFactor;
+  drawTrainBody(width + headoff, start, end, cfg, "black");
+  drawTrainHead(width + bodyOff, end - 0.003, true, cfg, "black");
+  drawTrainHead(width + bodyOff, start + 0.003, false, cfg, "black");
 
   // train
   drawTrainBody(width, start, end, cfg);

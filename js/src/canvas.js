@@ -21,14 +21,16 @@ const setGradient = (cfg) => {
 };
 
 const drawMinuteTicks = (startingTime, config, endingTime = false) => {
-  const { ctx, center, radius } = config;
+  const {
+    ctx, center, radius, scaleFactor,
+  } = config;
   const endTime = endingTime || startingTime.add({ hours: 1 });
   let curTime = startingTime;
 
   while (curTime.epochSeconds < endTime.epochSeconds) {
     const theta = getAnglesForTime(curTime, true).minute;
     const pos = getPosition(radius, theta, center);
-    drawDot(pos, 3, ctx);
+    drawDot(pos, 3 * scaleFactor, ctx);
     curTime = curTime.add({ minutes: 1 });
   }
 };
@@ -40,40 +42,25 @@ const inNext = (s, min, cfg) => {
 };
 
 const drawStop = (s, cfg) => {
-  const { ctx, center, radius } = cfg;
+  const {
+    ctx, center, radius, scaleFactor,
+  } = cfg;
   const time = s.arrivalTime || s.departureTime;
   const theta = getAnglesForTime(time, true).minute;
   const pos = getPosition(radius, theta, center);
-  drawDot(pos, 10, ctx);
+  const dotRad = 10 * scaleFactor;
+  drawDot(pos, dotRad, ctx);
 
   if (s.arrivalTime && s.departureTime) {
     const theta2 = getAnglesForTime(s.departureTime, true).minute;
     const pos2 = getPosition(radius, theta2, center);
-    drawDot(pos2, 10, ctx);
+    drawDot(pos2, dotRad, ctx);
 
-    ctx.lineWidth = 5;
+    ctx.lineWidth = 5 * scaleFactor;
     ctx.beginPath();
     ctx.arc(center.x, center.y, radius, -theta, -theta2);
     ctx.stroke();
   }
-};
-
-const drawHands = (cfg) => {
-  const {
-    ctx, center, radius, now,
-  } = cfg;
-  const { minute, hour } = getAnglesForTime(now);
-  const minEnd = getPosition(radius * 0.9, minute, center);
-  const hourEnd = getPosition(radius / 2, hour, center);
-
-  ctx.strokeStyle = "white";
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.moveTo(minEnd.x, minEnd.y);
-  ctx.lineTo(center.x, center.y);
-  ctx.stroke();
-  ctx.lineTo(hourEnd.x, hourEnd.y);
-  ctx.stroke();
 };
 
 export const prepCanvasConfig = () => {
@@ -83,6 +70,7 @@ export const prepCanvasConfig = () => {
   const height = window.innerHeight - 4;
   const center = { x: width / 2, y: height / 2 };
   const radius = height / 2.5;
+  const scaleFactor = radius / 319;
 
   canvas.height = height;
   canvas.width = width;
@@ -92,31 +80,29 @@ export const prepCanvasConfig = () => {
     ctx,
     center,
     radius,
+    scaleFactor,
     width,
     height,
   };
 };
 
-export const draw = (config) => {
-  const { stops, ctx, now } = config;
+export const clear = (config) => {
+  config.ctx.clearRect(0, 0, config.width, config.height);
+};
 
-  ctx.clearRect(0, 0, config.width, config.height);
+export const drawJourney = (config) => {
+  const { stops, now } = config;
 
-  if (!stops) {
-    drawHands(config);
-  } else {
-    const nextFewStops = stops.filter((s) => s.show && inNext(s, 53, config));
+  setGradient(config);
+  const nextFewStops = stops.filter((s) => s.show && inNext(s, 53, config));
 
-    const lastStop = nextFewStops.find((s) => s.arrivalTime && !s.departureTime);
-    const lastMinute = now.add({ minutes: 53 });
-    const end = lastStop && (lastStop.arrivalTime.epochSeconds < lastMinute.epochSeconds)
-      ? lastStop.arrivalTime
-      : lastMinute;
+  const lastStop = nextFewStops.find((s) => s.arrivalTime && !s.departureTime);
+  const lastMinute = now.add({ minutes: 53 });
+  const end = lastStop && (lastStop.arrivalTime.epochSeconds < lastMinute.epochSeconds)
+    ? lastStop.arrivalTime
+    : lastMinute;
 
-    setGradient(config);
-    drawMinuteTicks(now, config, end);
-    nextFewStops.forEach((s) => drawStop(s, config));
-    drawHands(config);
-    drawTrain(config);
-  }
+  nextFewStops.forEach((s) => drawStop(s, config));
+  drawMinuteTicks(now, config, end);
+  drawTrain(config);
 };
