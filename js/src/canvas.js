@@ -1,5 +1,9 @@
 import { getAnglesForTime, getPosition } from "./canvasFns";
 import drawTrain from "./train";
+import drawHands from "./hands";
+import {
+  earlierOf, lessThanXApart, stopInNext,
+} from "./helpers";
 
 const drawDot = (pos, r, ctx) => {
   ctx.beginPath();
@@ -20,32 +24,24 @@ const setGradient = (cfg) => {
   ctx.strokeStyle = gradiant;
 };
 
-const drawMinuteTicks = (startingTime, config, endingTime = false) => {
+const drawMinuteTicks = (startingTime, config, duration = { hours: 1 }) => {
   const {
     ctx, center, radius, scaleFactor,
   } = config;
-  const endTime = endingTime || startingTime.add({ hours: 1 });
-  let curTime = startingTime;
 
-  while (curTime.epochSeconds < endTime.epochSeconds) {
+  let curTime = startingTime;
+  for (; lessThanXApart(startingTime, curTime, duration); curTime = curTime.add({ minutes: 1 })) {
     const theta = getAnglesForTime(curTime, true).minute;
     const pos = getPosition(radius, theta, center);
     drawDot(pos, 3 * scaleFactor, ctx);
-    curTime = curTime.add({ minutes: 1 });
   }
-};
-
-const inNext = (s, min, cfg) => {
-  const t = s.departureTime || s.arrivalTime;
-  const diff = t.epochSeconds - cfg.now.epochSeconds;
-  return diff >= 0 && diff <= 60 * min;
 };
 
 const drawStop = (s, cfg) => {
   const {
     ctx, center, radius, scaleFactor,
   } = cfg;
-  const time = s.arrivalTime || s.departureTime;
+  const time = earlierOf(s.arrivalTime, s.departureTime);
   const theta = getAnglesForTime(time, true).minute;
   const pos = getPosition(radius, theta, center);
   const dotRad = 10 * scaleFactor;
@@ -63,7 +59,7 @@ const drawStop = (s, cfg) => {
   }
 };
 
-export const prepCanvasConfig = () => {
+const prepCanvasGetConfig = () => {
   const canvas = document.getElementById("main");
 
   const width = window.innerWidth - 17; // -17 to avoid scrollbar
@@ -86,23 +82,31 @@ export const prepCanvasConfig = () => {
   };
 };
 
-export const clear = (config) => {
+const clear = (config) => {
   config.ctx.clearRect(0, 0, config.width, config.height);
 };
 
-export const drawJourney = (config) => {
+const drawJourney = (config) => {
   const { stops, now } = config;
 
   setGradient(config);
-  const nextFewStops = stops.filter((s) => s.show && inNext(s, 53, config));
+  const nextFewStops = stops.filter((s) => (
+    s.show && stopInNext(s, config.now, { minutes: 53 }, true)
+  ));
 
-  const lastStop = nextFewStops.find((s) => s.arrivalTime && !s.departureTime);
-  const lastMinute = now.add({ minutes: 53 });
-  const end = lastStop && (lastStop.arrivalTime.epochSeconds < lastMinute.epochSeconds)
-    ? lastStop.arrivalTime
-    : lastMinute;
+  const endStop = nextFewStops.find((s) => s.arrivalTime && !s.departureTime);
+  const duration = endStop && stopInNext(endStop, now, { minutes: 53 }, true)
+    ? endStop.arrivalTime.since(now)
+    : { minutes: 53 };
 
   nextFewStops.forEach((s) => drawStop(s, config));
-  drawMinuteTicks(now, config, end);
+  drawMinuteTicks(now, config, duration);
   drawTrain(config);
+};
+
+export default {
+  prepCanvasGetConfig,
+  clear,
+  drawJourney,
+  drawHands,
 };

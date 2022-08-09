@@ -1,34 +1,50 @@
 import { Temporal } from "@js-temporal/polyfill";
-import { rebuildNextHour, rehydrateStops } from "./journey";
-import {
-  prepCanvasConfig, drawJourney, clear,
-} from "./canvas";
-import printStop from "./helpers";
-import {
-  drawInfo, getNextInfo, getTrainInfo, transitionInfo,
-} from "./info";
-import drawHands from "./hands";
+import { getJourney, completeNextHour, rehydrateStops } from "./journey";
+import cvs from "./canvas";
+import { printStops, stopInFuture, stopInPast } from "./helpers";
+import info from "./info";
 // import dummy from "./dummy";
 
 const main = async () => {
-  const config = prepCanvasConfig();
+  const config = cvs.prepCanvasGetConfig();
   // config.stops = dummy;
-
-  const manageJourney = () => {
-    rebuildNextHour(config.stops)
-      .then((stops) => rehydrateStops(stops))
-      .then((upToDate) => { config.stops = upToDate; })
-      .then(() => {
-        console.log("config.stops", config.stops);
-        config.stops.forEach((s) => printStop(s));
-      })
-      .catch((e) => console.log("failed building", e));
-  };
 
   const refreshTime = () => {
     config.now = Temporal.Now.zonedDateTimeISO();
-    // config.now = Temporal.Now.zonedDateTimeISO().add({ hours: 2 });
-    // config.now = Temporal.Now.zonedDateTimeISO().with({ minute: 27 });
+    // config.now = Temporal.Now.zonedDateTimeISO().add({ hours: 1 });
+    // config.now = Temporal.Now.zonedDateTimeISO().with({ minute: 10 });
+  };
+
+  const cycleInfo = () => {
+    refreshTime();
+    const oldInfo = config.info;
+    if (oldInfo?.type === "train") config.info = info.getNextInfo(config);
+    else config.info = info.getTrainInfo(config);
+
+    config.animating = true;
+    const drawCallback = () => {
+      refreshTime();
+      cvs.drawJourney(config);
+      cvs.drawHands(config);
+    };
+    info.transitionInfo(oldInfo?.text, config.info?.text, config, drawCallback)
+      .catch((e) => console.log("failed transitioning", e))
+      .finally(() => { config.animating = false; });
+  };
+
+  const manageJourney = async () => {
+    refreshTime();
+    const stopsToCome = config.stops?.some((s) => s.real && stopInFuture(s, config.now, true));
+    const action = stopsToCome
+      ? completeNextHour(config.stops)
+      : getJourney();
+
+    try {
+      config.stops = await action.then((stops) => rehydrateStops(stops));
+      if (!stopsToCome) cycleInfo();
+      console.log("config.stops", config.stops);
+      printStops(config.stops);
+    } catch (e) { console.log("failed building", e); }
   };
 
   const journeyIsOver = () => {
@@ -37,42 +53,22 @@ const main = async () => {
     const lastStop = config.stops[config.stops.length - 1];
     const futureStops = config.futureStops?.length;
     if (futureStops) return false;
-    const lastStopInPast = lastStop.arrivalTime.epochSeconds - config.now.epochSeconds < 0;
-    return lastStopInPast;
+    return stopInPast(lastStop, config.now);
   };
 
   const draw = () => {
     refreshTime();
     if (!config.animating) {
-      clear(config);
+      cvs.clear(config);
       if (!journeyIsOver()) {
-        drawJourney(config);
-        drawInfo(config);
+        cvs.drawJourney(config);
+        info.drawInfo(config);
       }
-      drawHands(config);
+      cvs.drawHands(config);
     }
   };
 
-  const cycleInfo = () => {
-    refreshTime();
-    const oldInfo = config.info;
-    if (oldInfo?.type === "next") config.info = getTrainInfo(config);
-    else config.info = getNextInfo(config);
-    config.animating = true;
-    const drawCallback = () => {
-      refreshTime();
-      drawJourney(config);
-      drawHands(config);
-    };
-    transitionInfo(oldInfo?.text, config.info?.text, config, drawCallback)
-      .catch((e) => {
-        console.log("failed transitioning", e);
-      })
-      .finally(() => { config.animating = false; });
-  };
-
   manageJourney();
-  cycleInfo();
   draw();
 
   setInterval(manageJourney, 1000 * 60 * 1.5);

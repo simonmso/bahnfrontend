@@ -1,4 +1,6 @@
+import { Temporal } from "@js-temporal/polyfill";
 import drawHands from "./hands";
+import { earlierOf, stopInFuture } from "./helpers";
 
 const renderFrames = (frames, pos, cfg, callback) => {
   const { ctx, width, height } = cfg;
@@ -49,41 +51,45 @@ const type = (text, animation, cfg, callback) => {
 };
 
 const getNextStop = ({ stops, now }) => {
-  const inFuture = stops?.filter?.((s) => {
-    const t = s.departureTime || s.arrivalTime;
-    return t.epochSeconds - now.epochSeconds > 0;
-  });
+  const inFuture = stops?.filter?.((s) => stopInFuture(s, now));
   return inFuture?.length
     ? inFuture.reduce((a, b) => {
-      const aT = a.arrivalTime || a.departureTime;
-      const bT = b.arrivalTime || b.departureTime;
-      const aDiff = aT.epochSeconds - now.epochSeconds;
-      const bDiff = bT.epochSeconds - now.epochSeconds;
-      return (aDiff < bDiff && aDiff > 0) ? a : b;
+      const aT = earlierOf(a.arrivalTime, a.departureTime);
+      const bT = earlierOf(b.arrivalTime, b.departureTime);
+      return Temporal.ZonedDateTime.compare(aT, bT) <= 0 ? a : b;
     })
     : undefined;
 };
 
-export const getTrainInfo = (cfg) => {
+const getTrainInfo = (cfg) => {
   const next = getNextStop(cfg);
-  const destination = next.futureStops[next.futureStops.length - 1];
+  const destination = next.futureStops?.length
+    ? next.futureStops[next.futureStops.length - 1]
+    : next.name;
   const cat = next.category || "";
   const line = next.line || next.number || "";
   return destination && { type: "train", text: `${cat} ${line} nach ${destination}` };
 };
 
-export const getNextInfo = (cfg) => {
+const getNextInfo = (cfg) => {
   const next = getNextStop(cfg);
   return next && { type: "next", text: `Nächste Halt: ${next.name}` };
 };
 
-export const transitionInfo = (oldInfo, newInfo, cfg, clbck) => (
+const transitionInfo = (oldInfo, newInfo, cfg, clbck) => (
   type(oldInfo, "shrinking", cfg, clbck)
     .then(() => type(newInfo, "growing", cfg, clbck))
 );
 
-export const drawInfo = (config) => {
+const drawInfo = (config) => {
   const { info } = config;
 
   return type(info?.text, false, config);
+};
+
+export default {
+  getNextInfo,
+  transitionInfo,
+  drawInfo,
+  getTrainInfo,
 };

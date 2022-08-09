@@ -2,7 +2,12 @@ import { Temporal } from "@js-temporal/polyfill";
 import { getPlanForTime, getAllChanges, getRecentChanges } from "./consumer";
 import knownStations from "./knownStations.json";
 import knownHbfs from "./knownHbfs.json";
-import printStop from "./helpers";
+import {
+  lessThanXApart,
+  printStop,
+  stopInFuture,
+  stopInNext,
+} from "./helpers";
 
 const confirmActualTime = (stop) => {
   const s = { ...stop };
@@ -43,12 +48,11 @@ const updateStopWithDelays = (s) => {
 
 const stopIsRelevant = (s) => {
   if (s.cancelled || !s.departureTime) return false;
-  const now = Temporal.Now.zonedDateTimeISO("Europe/Berlin");
-  if (s.departureTime) {
-    const diff = s.departureTime.epochSeconds - now.epochSeconds;
-    const tooDistant = (diff > 60 * 30) || (diff < -60 * 15);
-    if (tooDistant) return false;
+  const now = Temporal.Now.zonedDateTimeISO();
+  if (s.departureTime && !lessThanXApart(s.departureTime, now, { minutes: 30 })) {
+    return false;
   }
+
   const cats = ["RE", "IC", "ICE", "EC"];
   // for 3rd party trains, the category is in the line,
   // ex: { category: 'ME', line: 'RE3' }
@@ -56,7 +60,7 @@ const stopIsRelevant = (s) => {
 };
 
 const findSoonestDepartureFromStation = async (evaNo) => {
-  const now = Temporal.Now.zonedDateTimeISO("Europe/Berlin");
+  const now = Temporal.Now.zonedDateTimeISO();
   const plans = [getPlanForTime(evaNo)];
   if (now.minute < 15) plans.push(getPlanForTime(evaNo, now.subtract({ hours: 1 })));
   if (now.minute > 30) plans.push(getPlanForTime(evaNo, now.add({ hours: 1 })));
@@ -67,26 +71,18 @@ const findSoonestDepartureFromStation = async (evaNo) => {
 
   if (!relevant.length) return undefined;
 
-  const nearestStop = relevant.reduce((best, cur) => {
-    const bDiff = Math.abs(best.departureTime.epochSeconds - now.epochSeconds);
-    const cDiff = Math.abs(cur.departureTime.epochSeconds - now.epochSeconds);
-    return bDiff < cDiff ? best : cur;
+  return relevant.reduce((best, cur) => {
+    const bDiff = best.departureTime.since(now).abs();
+    const cDiff = cur.departureTime.since(now).abs();
+    return Temporal.Duration.compare(bDiff, cDiff) <= 0 ? best : cur;
   });
-  return nearestStop;
 };
-
-const lessThanXApart = (t1, t2, x) => (
-  Temporal.Duration.compare(
-    { hours: x },
-    t1.since(t2, { smallestUnit: "hour" }).abs(),
-  ) === 1
-);
 
 const findStopInStation = async (tripId, stationName, latestStopTime, future = true) => {
   let testingTime = latestStopTime;
   const evaNo = knownStations[stationName];
 
-  while (lessThanXApart(testingTime, latestStopTime, 10)) {
+  while (lessThanXApart(testingTime, latestStopTime, { hours: 10 })) {
     if (!evaNo) {
       console.log(`could not find eva for ${stationName}`);
       break;
@@ -126,7 +122,7 @@ const buildJourneyForNextHour = async (stop) => {
   // the departure time of the one before it
   for (let i = 0; i < stop.futureStops.length; i++) {
     const now = Temporal.Now.zonedDateTimeISO();
-    if (latestStopTime.epochSeconds - now.epochSeconds > 3600) break;
+    if (!lessThanXApart(latestStopTime, now, { hours: 1 })) break;
     // eslint-disable-next-line no-await-in-loop
     const newStop = await findStopInStation(stop.tripId, stop.futureStops[i], latestStopTime);
     if (newStop.real) {
@@ -144,7 +140,7 @@ const getRandomKey = (obj) => {
   return keys[randIdx];
 };
 
-const getJourney = async () => {
+export const getJourney = async () => {
   let stationName = getRandomKey(knownStations);
   let evaNo = knownStations[stationName];
   // let evaNo = 8002041;
@@ -174,33 +170,20 @@ const getJourney = async () => {
   return buildJourneyForNextHour(nearest);
 };
 
-export const rebuildNextHour = async (stops) => {
-  // filter out stops in the past
-  const now = Temporal.Now.instant().epochSeconds;
-  let newStops = stops?.filter((s) => {
-    if (!s.real) return false;
-    const t = s.departureTime || s.arrivalTime;
-    const diff = t.epochSeconds - now;
-    return diff > 0;
-  });
+export const completeNextHour = async (stops) => {
+  const now = Temporal.Now.zonedDateTimeISO();
 
-  if (!newStops?.length) {
-    console.log("journey finished");
-    const newJourney = await getJourney();
-    return newJourney;
-  }
+  let nextStops = stops?.filter((s) => s.real && stopInFuture(s, now, true));
 
   // if the furthest stop is less than an hour away,
-  // get all stops in the next hour
-  const lastStop = newStops[newStops.length - 1];
-  const t = lastStop.arrivalTime || lastStop.departureTime;
-  const lastDiff = t.epochSeconds - now;
-  if (lastStop.futureStops?.length && lastDiff < 3600) {
+  // get some stops after it
+  const lastStop = nextStops[nextStops.length - 1];
+  if (lastStop.futureStops?.length && stopInNext(lastStop, now, { hours: 1 }, true)) {
     const stopsToAdd = await buildJourneyForNextHour(lastStop);
-    newStops = newStops.concat(stopsToAdd.slice(1));
+    nextStops = nextStops.concat(stopsToAdd.slice(1));
   }
 
-  return newStops;
+  return nextStops;
 };
 
 export const rehydrateStops = (stops) => (
