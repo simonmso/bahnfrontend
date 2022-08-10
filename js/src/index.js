@@ -47,6 +47,7 @@ const main = async () => {
     } catch (e) { console.log("failed building", e); }
   };
 
+  // I'm not sure we still need this
   const journeyIsOver = () => {
     const noStops = !config.stops?.length;
     if (noStops) return true;

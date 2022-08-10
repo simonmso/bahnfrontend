@@ -1,7 +1,5 @@
 import { Temporal } from "@js-temporal/polyfill";
 
-// import dummy from "./dummy";
-
 const pad = (n) => n.toString().padStart(2, "0");
 
 export const printStop = (s) => {
@@ -34,7 +32,11 @@ export const laterOf = (t1, t2) => {
 };
 
 export const lessThanXApart = (t1, t2, duration) => (
-  Temporal.Duration.compare(duration, t1.since(t2).abs()) === 1
+  Temporal.Duration.compare(
+    duration,
+    // for performance reasons, not using t1.since(t2).abs()
+    { seconds: Math.abs(t1.epochSeconds - t2.epochSeconds) },
+  ) === 1
 );
 
 export const stopInFuture = (stop, now, partiallyCounts = false) => {

@@ -1,8 +1,9 @@
-import { getAnglesForTime, getPosition } from "./canvasFns";
+import { Temporal } from "@js-temporal/polyfill";
+import { getMinuteAngle, getPosition } from "./canvasFns";
 import drawTrain from "./train";
 import drawHands from "./hands";
 import {
-  earlierOf, lessThanXApart, stopInNext,
+  earlierOf, stopInNext,
 } from "./helpers";
 
 const drawDot = (pos, r, ctx) => {
@@ -14,7 +15,7 @@ const drawDot = (pos, r, ctx) => {
 const setGradient = (cfg) => {
   const { center, ctx, now } = cfg;
 
-  const curAngle = getAnglesForTime(now).minute;
+  const curAngle = getMinuteAngle(now);
   // WARNING: this may behave differently in other browsers
   const gradiant = ctx.createConicGradient(-curAngle + (Math.PI / 2), center.x, center.y);
   gradiant.addColorStop(0, "white");
@@ -29,10 +30,12 @@ const drawMinuteTicks = (startingTime, config, duration = { hours: 1 }) => {
     ctx, center, radius, scaleFactor,
   } = config;
 
-  let curTime = startingTime;
-  for (; lessThanXApart(startingTime, curTime, duration); curTime = curTime.add({ minutes: 1 })) {
-    const theta = getAnglesForTime(curTime, true).minute;
-    const pos = getPosition(radius, theta, center);
+  const desiredMinutes = Temporal.Duration.from(duration).total({ unit: "minute" });
+  const startingAngle = getMinuteAngle(startingTime, true);
+  // for performance reasons, this isn't done using Temporal.compare
+  for (let i = 0; i <= desiredMinutes; i++) {
+    const offset = (Math.PI / 30) * i;
+    const pos = getPosition(radius, startingAngle - offset, center);
     drawDot(pos, 3 * scaleFactor, ctx);
   }
 };
@@ -42,13 +45,13 @@ const drawStop = (s, cfg) => {
     ctx, center, radius, scaleFactor,
   } = cfg;
   const time = earlierOf(s.arrivalTime, s.departureTime);
-  const theta = getAnglesForTime(time, true).minute;
+  const theta = getMinuteAngle(time, true);
   const pos = getPosition(radius, theta, center);
   const dotRad = 10 * scaleFactor;
   drawDot(pos, dotRad, ctx);
 
   if (s.arrivalTime && s.departureTime) {
-    const theta2 = getAnglesForTime(s.departureTime, true).minute;
+    const theta2 = getMinuteAngle(s.departureTime, true);
     const pos2 = getPosition(radius, theta2, center);
     drawDot(pos2, dotRad, ctx);
 

@@ -1,4 +1,4 @@
-import { getAnglesForTime, getPosition } from "./canvasFns";
+import { getMinuteAngle, getPosition } from "./canvasFns";
 
 const drawTrainHead = (trainWidth, angle, forward, cfg, color = "white") => {
   const { ctx, center, radius } = cfg;
@@ -98,8 +98,8 @@ const drawFrontWindow = (trainWidth, angle, forward, cfg) => {
 
 const drawTrain = (cfg) => {
   const { now, scaleFactor } = cfg;
-  const start = getAnglesForTime(now.subtract({ minutes: 7 })).minute;
-  const end = getAnglesForTime(now.subtract({ seconds: 33 })).minute;
+  const start = getMinuteAngle(now.subtract({ minutes: 7 }));
+  const end = getMinuteAngle(now.subtract({ seconds: 33 }));
 
   const width = 10 * scaleFactor;
 

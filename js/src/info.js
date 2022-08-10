@@ -1,5 +1,4 @@
 import { Temporal } from "@js-temporal/polyfill";
-import drawHands from "./hands";
 import { earlierOf, stopInFuture } from "./helpers";
 
 const renderFrames = (frames, pos, cfg, callback) => {
@@ -9,7 +8,6 @@ const renderFrames = (frames, pos, cfg, callback) => {
       ctx.fillStyle = "white";
       ctx.clearRect(0, 0, width, height);
       ctx.fillText(t, pos.x - (ctx.measureText(t).width / 2), pos.y);
-      drawHands(cfg);
       callback?.();
       resolve();
     }, 65 * i);
