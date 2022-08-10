@@ -1,11 +1,12 @@
 import { Temporal } from "@js-temporal/polyfill";
-import { earlierOf, stopInFuture } from "./helpers";
+import { earlierOf, stopInFuture } from "../helpers";
 
 const renderFrames = (frames, pos, cfg, callback) => {
-  const { ctx, width, height } = cfg;
+  const { ctxs, width, height } = cfg;
+  const ctx = ctxs.info;
+  ctx.fillStyle = "white";
   const promises = frames.map((t, i) => new Promise((resolve) => {
     setTimeout(() => {
-      ctx.fillStyle = "white";
       ctx.clearRect(0, 0, width, height);
       ctx.fillText(t, pos.x - (ctx.measureText(t).width / 2), pos.y);
       callback?.();
@@ -18,8 +19,9 @@ const renderFrames = (frames, pos, cfg, callback) => {
 const type = (text, animation, cfg, callback) => {
   if (!text) return new Promise((r) => { r(); });
   const {
-    center, radius, ctx, scaleFactor,
+    center, radius, ctxs, scaleFactor,
   } = cfg;
+  const ctx = ctxs.info;
   ctx.font = `${22 * scaleFactor}px "Courier New", sans-serif`;
   ctx.fillStyle = "white";
 
@@ -69,25 +71,24 @@ const getTrainInfo = (cfg) => {
   return destination && { type: "train", text: `${cat} ${line} nach ${destination}` };
 };
 
-const getNextInfo = (cfg) => {
+const getNextStopInfo = (cfg) => {
   const next = getNextStop(cfg);
-  return next && { type: "next", text: `Nächste Halt: ${next.name}` };
+  return next && { type: "nextStop", text: `Nächste Halt: ${next.name}` };
 };
+
+const getNextInfo = (cfg) => (
+  cfg.info?.type === "train" ? getNextStopInfo(cfg) : getTrainInfo(cfg)
+);
 
 const transitionInfo = (oldInfo, newInfo, cfg, clbck) => (
   type(oldInfo, "shrinking", cfg, clbck)
     .then(() => type(newInfo, "growing", cfg, clbck))
 );
 
-const drawInfo = (config) => {
-  const { info } = config;
-
-  return type(info?.text, false, config);
-};
+const drawInfo = (cfg) => type(cfg?.info?.text, false, cfg);
 
 export default {
   getNextInfo,
   transitionInfo,
   drawInfo,
-  getTrainInfo,
 };

@@ -19,3 +19,33 @@ export const getPosition = (r, theta, center) => ({
   x: center.x + (r * Math.cos(theta)),
   y: center.y - (r * Math.sin(theta)),
 });
+
+export const prepCanvasGetConfig = () => {
+  const clock = document.getElementById("clock");
+  const info = document.getElementById("info");
+
+  // const width = window.innerWidth - 17; // -17 to avoid scrollbar
+  const width = window.innerWidth; // -17 to avoid scrollbar
+  const height = window.innerHeight;
+  // const height = window.innerHeight - 4;
+  const center = { x: width / 2, y: height / 2 };
+  const radius = height / 2.5;
+  const scaleFactor = radius / 319;
+
+  clock.height = height;
+  clock.width = width;
+  info.height = height;
+  info.width = width;
+
+  return {
+    ctxs: {
+      clock: clock.getContext("2d"),
+      info: info.getContext("2d"),
+    },
+    center,
+    radius,
+    scaleFactor,
+    width,
+    height,
+  };
+};

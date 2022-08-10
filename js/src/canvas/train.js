@@ -1,7 +1,8 @@
 import { getMinuteAngle, getPosition } from "./canvasFns";
 
 const drawTrainHead = (trainWidth, angle, forward, cfg, color = "white") => {
-  const { ctx, center, radius } = cfg;
+  const { ctxs, center, radius } = cfg;
+  const ctx = ctxs.clock;
   const inner = getPosition(radius - trainWidth, angle, center);
   const outer = getPosition(radius + trainWidth, angle, center);
   const cpLen = trainWidth * 3;
@@ -32,7 +33,8 @@ const drawTrainHead = (trainWidth, angle, forward, cfg, color = "white") => {
 };
 
 const drawTrainBody = (trainWidth, startAngle, endAngle, cfg, color = "white") => {
-  const { ctx, center, radius } = cfg;
+  const { ctxs, center, radius } = cfg;
+  const ctx = ctxs.clock;
   ctx.strokeStyle = color;
   ctx.lineWidth = trainWidth * 2;
   ctx.beginPath();
@@ -41,7 +43,8 @@ const drawTrainBody = (trainWidth, startAngle, endAngle, cfg, color = "white") =
 };
 
 const drawCarSeperators = (trainWidth, startAngle, endAngle, cfg) => {
-  const { ctx, center, radius } = cfg;
+  const { ctxs, center, radius } = cfg;
+  const ctx = ctxs.clock;
 
   // account for the added length of the head and tail
   const cars = 4;
@@ -71,7 +74,8 @@ const drawCarSeperators = (trainWidth, startAngle, endAngle, cfg) => {
 };
 
 const drawFrontWindow = (trainWidth, angle, forward, cfg) => {
-  const { ctx, center, radius } = cfg;
+  const { ctxs, center, radius } = cfg;
+  const ctx = ctxs.clock;
   const angleOffsetForSec = (sec) => (
     forward
       ? -1 * (2 * Math.PI * (sec / 3600))

@@ -1,5 +1,5 @@
 body {
-    background-color: black;
+    background-color: rgb(0, 0, 0);
     margin: 0;
     padding: 0;
 }
@@ -7,8 +7,11 @@ body {
     height: 100vh;
     width: 100vw;
 }
-#main {
+canvas {
     outline-style: solid;
     outline-color: rgb(43, 43, 43);
     outline-width: 1px;
+    position: absolute;
+    left: 0;
+    top: 0;
 }

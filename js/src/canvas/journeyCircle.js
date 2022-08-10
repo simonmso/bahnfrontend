@@ -1,10 +1,7 @@
 import { Temporal } from "@js-temporal/polyfill";
 import { getMinuteAngle, getPosition } from "./canvasFns";
+import { earlierOf, stopInNext } from "../helpers";
 import drawTrain from "./train";
-import drawHands from "./hands";
-import {
-  earlierOf, stopInNext,
-} from "./helpers";
 
 const drawDot = (pos, r, ctx) => {
   ctx.beginPath();
@@ -13,7 +10,8 @@ const drawDot = (pos, r, ctx) => {
 };
 
 const setGradient = (cfg) => {
-  const { center, ctx, now } = cfg;
+  const { center, ctxs, now } = cfg;
+  const ctx = ctxs.clock;
 
   const curAngle = getMinuteAngle(now);
   // WARNING: this may behave differently in other browsers
@@ -27,8 +25,9 @@ const setGradient = (cfg) => {
 
 const drawMinuteTicks = (startingTime, config, duration = { hours: 1 }) => {
   const {
-    ctx, center, radius, scaleFactor,
+    ctxs, center, radius, scaleFactor,
   } = config;
+  const ctx = ctxs.clock;
 
   const desiredMinutes = Temporal.Duration.from(duration).total({ unit: "minute" });
   const startingAngle = getMinuteAngle(startingTime, true);
@@ -42,8 +41,9 @@ const drawMinuteTicks = (startingTime, config, duration = { hours: 1 }) => {
 
 const drawStop = (s, cfg) => {
   const {
-    ctx, center, radius, scaleFactor,
+    ctxs, center, radius, scaleFactor,
   } = cfg;
+  const ctx = ctxs.clock;
   const time = earlierOf(s.arrivalTime, s.departureTime);
   const theta = getMinuteAngle(time, true);
   const pos = getPosition(radius, theta, center);
@@ -60,33 +60,6 @@ const drawStop = (s, cfg) => {
     ctx.arc(center.x, center.y, radius, -theta, -theta2);
     ctx.stroke();
   }
-};
-
-const prepCanvasGetConfig = () => {
-  const canvas = document.getElementById("main");
-
-  const width = window.innerWidth - 17; // -17 to avoid scrollbar
-  const height = window.innerHeight - 4;
-  const center = { x: width / 2, y: height / 2 };
-  const radius = height / 2.5;
-  const scaleFactor = radius / 319;
-
-  canvas.height = height;
-  canvas.width = width;
-
-  const ctx = canvas.getContext("2d");
-  return {
-    ctx,
-    center,
-    radius,
-    scaleFactor,
-    width,
-    height,
-  };
-};
-
-const clear = (config) => {
-  config.ctx.clearRect(0, 0, config.width, config.height);
 };
 
 const drawJourney = (config) => {
@@ -107,9 +80,4 @@ const drawJourney = (config) => {
   drawTrain(config);
 };
 
-export default {
-  prepCanvasGetConfig,
-  clear,
-  drawJourney,
-  drawHands,
-};
+export default drawJourney;

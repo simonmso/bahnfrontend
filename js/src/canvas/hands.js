@@ -2,8 +2,9 @@ import { getAnglesForTime, getPosition } from "./canvasFns";
 
 const drawHands = (cfg) => {
   const {
-    ctx, center, radius, now, scaleFactor,
+    ctxs, center, radius, now, scaleFactor,
   } = cfg;
+  const ctx = ctxs.clock;
   const { minute, hour } = getAnglesForTime(now);
   const minEnd = getPosition(radius * 0.9, minute, center);
   const hourEnd = getPosition(radius / 2, hour, center);
