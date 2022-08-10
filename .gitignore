@@ -7,3 +7,5 @@ reduced.csv
 /js/dist/main.js
 .eslintrc*
 node_modules
+/sh
+
