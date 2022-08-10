@@ -2,11 +2,29 @@ import { Temporal } from "@js-temporal/polyfill";
 import { getJourney, completeNextHour, rehydrateStops } from "./journey";
 import cvs from "./canvas";
 import { printStops, stopInFuture } from "./helpers";
-// import dummy from "./dummy";
+import dummy from "./dummy";
+
+const useDummy = false;
 
 const main = async () => {
   const config = cvs.prepCanvasGetConfig();
-  // config.stops = dummy;
+  if (useDummy) config.stops = dummy;
+
+  config.downtime = {
+    start: { hour: 21, minute: 25, second: 0 },
+    duration: Temporal.Duration.from({ hours: 9 }),
+  };
+
+  const inDowntime = () => {
+    const { downtime, now } = config;
+    const { start, duration } = downtime;
+    const todayStart = now.with(start);
+    const yesterdayStart = now.with(start).subtract({ days: 1 });
+    return [todayStart, yesterdayStart].some((t) => (
+      (Temporal.Duration.compare(duration, now.since(t)) === 1)
+      && (Temporal.Duration.compare(now.since(t), { seconds: 0 }) === 1)
+    ));
+  };
 
   const refreshTime = () => {
     config.now = Temporal.Now.zonedDateTimeISO();
@@ -41,7 +59,6 @@ const main = async () => {
     try {
       config.stops = await action.then((stops) => rehydrateStops(stops));
       if (!notOver) cycleInfo();
-      console.log("config.stops", config.stops);
       printStops(config.stops);
     } catch (e) { console.log("failed building", e); }
   };
@@ -53,11 +70,11 @@ const main = async () => {
     cvs.drawHands(config);
   };
 
-  manageJourney();
+  if (!useDummy) manageJourney();
   cycleInfo();
   draw();
 
-  setInterval(manageJourney, 1000 * 60 * 1.5);
+  if (!useDummy) setInterval(() => { if (!inDowntime()) manageJourney(); }, 1000 * 60 * 1.5);
   setInterval(draw, 400);
   setInterval(cycleInfo, 30 * 1000);
 };

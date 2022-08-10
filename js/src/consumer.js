@@ -30,7 +30,7 @@ const request = (endpoint) => {
     });
 };
 
-export const getPlanForTime = (evaNo, dateArg) => {
+const getPlanForTime = (evaNo, dateArg) => {
   const time = dateArg || Temporal.Now.zonedDateTimeISO("Europe/Berlin");
   const date = getStringFromDate(time);
   const hour = time.hour.toString().padStart(2, "0");
@@ -45,6 +45,12 @@ const getChanges = (evaNo, changeType = "fchg") => (
     .then((filtered) => formatStopsFromTimetable(filtered))
 );
 
-export const getAllChanges = (evaNo) => getChanges(evaNo, "fchg");
+const getAllChanges = (evaNo) => getChanges(evaNo, "fchg");
 
-export const getRecentChanges = (evaNo) => getChanges(evaNo, "rchg");
+const getRecentChanges = (evaNo) => getChanges(evaNo, "rchg");
+
+export default {
+  getPlanForTime,
+  getAllChanges,
+  getRecentChanges,
+};

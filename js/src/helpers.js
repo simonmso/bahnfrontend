@@ -2,7 +2,7 @@ import { Temporal } from "@js-temporal/polyfill";
 
 const pad = (n) => n.toString().padStart(2, "0");
 
-export const printStop = (s) => {
+export const toS = (s) => {
   const a = s.arrivalTime;
   const pa = s.plannedArrivalTime;
   const d = s.departureTime;
@@ -14,11 +14,11 @@ export const printStop = (s) => {
 
   const as = `${pas}->${aas}`;
   const ds = `${pds}->${ads}`;
-  console.log(s.category, s.line || s.number, as, ds, s.name);
+  return `${s.category} ${s.line || s.number} ${as} ${ds} ${s.name}`;
 };
 
 export const printStops = (ss) => {
-  ss.forEach((s) => printStop(s));
+  ss.forEach((s) => console.log(toS(s)));
 };
 
 export const earlierOf = (t1, t2) => {
@@ -56,4 +56,10 @@ export const stopInNext = (stop, now, duration, partiallyCounts = false) => {
     ? laterOf(stop.departureTime, stop.arrivalTime)
     : earlierOf(stop.departureTime, stop.arrivalTime);
   return lessThanXApart(t, now, duration) && stopInFuture(stop, now, partiallyCounts);
+};
+
+export const getRandomKey = (obj) => {
+  const keys = Object.keys(obj);
+  const randIdx = Math.floor(Math.random() * keys.length);
+  return keys[randIdx];
 };
