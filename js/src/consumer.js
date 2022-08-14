@@ -31,7 +31,8 @@ const request = (endpoint) => {
 };
 
 const getPlanForTime = (evaNo, dateArg) => {
-  const time = dateArg || Temporal.Now.zonedDateTimeISO("Europe/Berlin");
+  let time = dateArg || Temporal.Now.zonedDateTimeISO();
+  time = time.withTimeZone("Europe/Berlin");
   const date = getStringFromDate(time);
   const hour = time.hour.toString().padStart(2, "0");
 

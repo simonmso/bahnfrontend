@@ -63,3 +63,7 @@ export const getRandomKey = (obj) => {
   const randIdx = Math.floor(Math.random() * keys.length);
   return keys[randIdx];
 };
+
+export const journeyNotOver = (state) => (
+  state.stops?.some((s) => s.real && stopInFuture(s, state.now, true))
+);

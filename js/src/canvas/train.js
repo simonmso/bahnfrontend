@@ -1,7 +1,7 @@
 import { getMinuteAngle, getPosition } from "./canvasFns";
 
-const drawTrainHead = (trainWidth, angle, forward, cfg, color = "white") => {
-  const { ctxs, center, radius } = cfg;
+const drawTrainHead = (trainWidth, angle, forward, state, color = "white") => {
+  const { ctxs, center, radius } = state;
   const ctx = ctxs.clock;
   const inner = getPosition(radius - trainWidth, angle, center);
   const outer = getPosition(radius + trainWidth, angle, center);
@@ -32,8 +32,8 @@ const drawTrainHead = (trainWidth, angle, forward, cfg, color = "white") => {
   ctx.stroke();
 };
 
-const drawTrainBody = (trainWidth, startAngle, endAngle, cfg, color = "white") => {
-  const { ctxs, center, radius } = cfg;
+const drawTrainBody = (trainWidth, startAngle, endAngle, state, color = "white") => {
+  const { ctxs, center, radius } = state;
   const ctx = ctxs.clock;
   ctx.strokeStyle = color;
   ctx.lineWidth = trainWidth * 2;
@@ -42,8 +42,8 @@ const drawTrainBody = (trainWidth, startAngle, endAngle, cfg, color = "white") =
   ctx.stroke();
 };
 
-const drawCarSeperators = (trainWidth, startAngle, endAngle, cfg) => {
-  const { ctxs, center, radius } = cfg;
+const drawCarSeperators = (trainWidth, startAngle, endAngle, state) => {
+  const { ctxs, center, radius } = state;
   const ctx = ctxs.clock;
 
   // account for the added length of the head and tail
@@ -73,8 +73,8 @@ const drawCarSeperators = (trainWidth, startAngle, endAngle, cfg) => {
   }
 };
 
-const drawFrontWindow = (trainWidth, angle, forward, cfg) => {
-  const { ctxs, center, radius } = cfg;
+const drawFrontWindow = (trainWidth, angle, forward, state) => {
+  const { ctxs, center, radius } = state;
   const ctx = ctxs.clock;
   const angleOffsetForSec = (sec) => (
     forward
@@ -100,8 +100,8 @@ const drawFrontWindow = (trainWidth, angle, forward, cfg) => {
   ctx.fill();
 };
 
-const drawTrain = (cfg) => {
-  const { now, scaleFactor } = cfg;
+const drawTrain = (state) => {
+  const { now, scaleFactor } = state;
   const start = getMinuteAngle(now.subtract({ minutes: 7 }));
   const end = getMinuteAngle(now.subtract({ seconds: 33 }));
 
@@ -110,16 +110,16 @@ const drawTrain = (cfg) => {
   // black train outline
   const headoff = 2.5 * scaleFactor;
   const bodyOff = 1.7 * scaleFactor;
-  drawTrainBody(width + headoff, start, end, cfg, "black");
-  drawTrainHead(width + bodyOff, end - 0.003, true, cfg, "black");
-  drawTrainHead(width + bodyOff, start + 0.003, false, cfg, "black");
+  drawTrainBody(width + headoff, start, end, state, "black");
+  drawTrainHead(width + bodyOff, end - 0.003, true, state, "black");
+  drawTrainHead(width + bodyOff, start + 0.003, false, state, "black");
 
   // train
-  drawTrainBody(width, start, end, cfg);
-  drawTrainHead(width, end, true, cfg);
-  drawTrainHead(width, start, false, cfg);
-  drawCarSeperators(width, start, end, cfg);
-  drawFrontWindow(width, end, true, cfg);
+  drawTrainBody(width, start, end, state);
+  drawTrainHead(width, end, true, state);
+  drawTrainHead(width, start, false, state);
+  drawCarSeperators(width, start, end, state);
+  drawFrontWindow(width, end, true, state);
 };
 
 export default drawTrain;

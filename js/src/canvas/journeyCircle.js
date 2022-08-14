@@ -9,8 +9,8 @@ const drawDot = (pos, r, ctx) => {
   ctx.fill();
 };
 
-const setGradient = (cfg) => {
-  const { center, ctxs, now } = cfg;
+const setGradient = (state) => {
+  const { center, ctxs, now } = state;
   const ctx = ctxs.clock;
 
   const curAngle = getMinuteAngle(now);
@@ -23,10 +23,10 @@ const setGradient = (cfg) => {
   ctx.strokeStyle = gradiant;
 };
 
-const drawMinuteTicks = (startingTime, config, duration = { hours: 1 }) => {
+const drawMinuteTicks = (startingTime, state, duration = { hours: 1 }) => {
   const {
     ctxs, center, radius, scaleFactor,
-  } = config;
+  } = state;
   const ctx = ctxs.clock;
 
   const desiredMinutes = Temporal.Duration.from(duration).total({ unit: "minute" });
@@ -39,10 +39,10 @@ const drawMinuteTicks = (startingTime, config, duration = { hours: 1 }) => {
   }
 };
 
-const drawStop = (s, cfg) => {
+const drawStop = (s, state) => {
   const {
     ctxs, center, radius, scaleFactor,
-  } = cfg;
+  } = state;
   const ctx = ctxs.clock;
   const time = earlierOf(s.arrivalTime, s.departureTime);
   const theta = getMinuteAngle(time, true);
@@ -62,12 +62,12 @@ const drawStop = (s, cfg) => {
   }
 };
 
-const drawJourney = (config) => {
-  const { stops, now } = config;
+const drawJourney = (state) => {
+  const { stops, now } = state;
 
-  setGradient(config);
+  setGradient(state);
   const nextFewStops = stops.filter((s) => (
-    s.show && stopInNext(s, config.now, { minutes: 53 }, true)
+    s.show && stopInNext(s, state.now, { minutes: 53 }, true)
   ));
 
   const endStop = nextFewStops.find((s) => s.arrivalTime && !s.departureTime);
@@ -75,9 +75,9 @@ const drawJourney = (config) => {
     ? endStop.arrivalTime.since(now)
     : { minutes: 53 };
 
-  nextFewStops.forEach((s) => drawStop(s, config));
-  drawMinuteTicks(now, config, duration);
-  drawTrain(config);
+  nextFewStops.forEach((s) => drawStop(s, state));
+  drawMinuteTicks(now, state, duration);
+  drawTrain(state);
 };
 
 export default drawJourney;

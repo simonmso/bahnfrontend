@@ -53,10 +53,12 @@ const findSoonestDepartureFromStation = async (evaNo) => {
 const findStopInStation = async (tripId, stationName, latestStopTime, future = true) => {
   let testingTime = latestStopTime;
   const evaNo = knownStations[stationName];
+  let problem;
 
   while (lessThanXApart(testingTime, latestStopTime, { hours: 10 })) {
     if (!evaNo) {
       console.log(`could not find eva for ${stationName}`);
+      problem = "unknown eva";
       break;
     }
     try {
@@ -71,7 +73,10 @@ const findStopInStation = async (tripId, stationName, latestStopTime, future = t
         stop.eva = evaNo;
         return stop;
       }
-    } catch { break; }
+    } catch (e) {
+      problem = e;
+      break;
+    }
 
     testingTime = future
       ? testingTime.add({ hours: 1 })
@@ -83,12 +88,14 @@ const findStopInStation = async (tripId, stationName, latestStopTime, future = t
     tripId,
     name: stationName,
     eva: evaNo,
+    problem,
   };
 };
 
 const buildJourneyForNextHour = async (stop) => {
   let latestStopTime = stop.departureTime;
   const nextHour = [stop];
+  const problems = [];
 
   // not using Promise.all or .forEach because I want each request to depend on
   // the departure time of the one before it
@@ -100,10 +107,13 @@ const buildJourneyForNextHour = async (stop) => {
     if (newStop.real) {
       latestStopTime = newStop.plannedDepartureTime;
       nextHour.push(newStop);
-    }
+    } else problems.push(newStop);
   }
 
-  return nextHour;
+  return {
+    stops: nextHour,
+    problems: problems.length ? problems : undefined,
+  };
 };
 
 const findSoonestFromRandom = async (hbf = false) => {
@@ -125,10 +135,10 @@ export const getJourney = async () => {
     nearest = await findSoonestFromRandom(true);
   }
 
-  if (!nearest) console.log("No journey found at this time");
-  else console.log("found nearest:\n", toS(nearest));
+  if (!nearest) throw Error("No journey found at this time");
+  console.log("found nearest:\n", toS(nearest));
 
-  return nearest ? buildJourneyForNextHour(nearest) : undefined;
+  return buildJourneyForNextHour(nearest);
 };
 
 export const completeNextHour = async (stops) => {
@@ -144,7 +154,7 @@ export const completeNextHour = async (stops) => {
     nextStops = nextStops.concat(stopsToAdd.slice(1));
   }
 
-  return nextStops;
+  return { stops: nextStops };
 };
 
 export const rehydrateStops = (stops) => (

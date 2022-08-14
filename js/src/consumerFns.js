@@ -1,4 +1,5 @@
 import { Temporal } from "@js-temporal/polyfill";
+import { toS } from "./helpers";
 
 const getDateFromString = (dateStr) => {
   if (!dateStr) return undefined;
@@ -39,6 +40,7 @@ const nodeToStop = (node) => {
   });
 
   newStop.real = true;
+  newStop.asString = toS(newStop);
   return newStop;
 };
 
@@ -50,9 +52,10 @@ export const formatStopsFromTimetable = (childNodes) => {
 };
 
 export const getStringFromDate = (date) => {
-  const yy = date.year.toString().toString().slice(-2);
-  const mm = date.month.toString().padStart(2, "0");
-  const dd = date.day.toString().padStart(2, "0");
+  const dt = date.withTimeZone("Europe/Berlin");
+  const yy = dt.year.toString().slice(-2);
+  const mm = dt.month.toString().padStart(2, "0");
+  const dd = dt.day.toString().padStart(2, "0");
 
   return `${yy}${mm}${dd}`;
 };

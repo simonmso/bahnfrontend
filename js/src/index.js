@@ -1,22 +1,21 @@
 import { Temporal } from "@js-temporal/polyfill";
 import { getJourney, completeNextHour, rehydrateStops } from "./journey";
 import cvs from "./canvas";
-import { printStops, stopInFuture } from "./helpers";
+import { journeyNotOver, printStops } from "./helpers";
 import dummy from "./dummy";
-
-const useDummy = false;
+import cfg from "./config.json";
 
 const main = async () => {
-  const config = cvs.prepCanvasGetConfig();
-  if (useDummy) config.stops = dummy;
+  const state = cvs.prepCanvasGetState();
+  if (cfg.useDummy) state.stops = dummy;
 
-  config.downtime = {
+  state.downtime = {
     start: { hour: 21, minute: 25, second: 0 },
     duration: Temporal.Duration.from({ hours: 9 }),
   };
 
   const inDowntime = () => {
-    const { downtime, now } = config;
+    const { downtime, now } = state;
     const { start, duration } = downtime;
     const todayStart = now.with(start);
     const yesterdayStart = now.with(start).subtract({ days: 1 });
@@ -27,56 +26,60 @@ const main = async () => {
   };
 
   const refreshTime = () => {
-    config.now = Temporal.Now.zonedDateTimeISO();
-    // config.now = Temporal.Now.zonedDateTimeISO().add({ minutes: 53 });
-    // config.now = Temporal.Now.zonedDateTimeISO().with({ minute: 10 });
-  };
-
-  const journeyNotOver = () => {
-    const { stops } = config;
-    const stopsToCome = stops?.some((s) => s.real && stopInFuture(s, config.now, true));
-    const lastHasMore = stops?.length && stops[stops.length - 1].futureStops?.length;
-    return stopsToCome || lastHasMore;
+    state.now = Temporal.Now.zonedDateTimeISO();
+    // state.now = Temporal.Now.zonedDateTimeISO().add({ minutes: 53 });
+    // state.now = Temporal.Now.zonedDateTimeISO().with({ minute: 10 });
   };
 
   const cycleInfo = () => {
     refreshTime();
-    const oldInfo = config.info;
-    config.info = journeyNotOver()
-      ? cvs.info.getNextInfo(config)
-      : {};
+    const oldInfo = state.info;
+    state.info = cvs.info.getNextInfo(state);
 
-    cvs.info.transitionInfo(oldInfo?.text, config.info?.text, config, refreshTime)
+    cvs.info.transitionInfo(oldInfo?.text, state.info?.text, state, refreshTime)
       .catch((e) => console.log("failed transitioning", e))
-      .finally(() => { config.animating = false; });
+      .finally(() => { state.animating = false; });
   };
 
   const manageJourney = async () => {
-    refreshTime();
-    const notOver = journeyNotOver();
-    const action = notOver ? completeNextHour(config.stops) : getJourney();
-
     try {
-      config.stops = await action.then((stops) => rehydrateStops(stops));
+      refreshTime();
+      const notOver = journeyNotOver(state);
+      const action = notOver ? completeNextHour(state.stops) : getJourney();
+
+      console.log("old stops", state.stops);
+
+      state.stops = await action.then(({ stops, problems }) => {
+        if (problems?.length) state.problems = state.problems.concat(problems);
+        return rehydrateStops(stops);
+      });
       if (!notOver) cycleInfo();
-      printStops(config.stops);
-    } catch (e) { console.log("failed building", e); }
+
+      printStops(state.stops);
+    } catch (e) {
+      console.log("failed building", e);
+      state.problems.push(e);
+    }
   };
 
   const draw = () => {
     refreshTime();
-    cvs.clearClock(config);
-    if (journeyNotOver()) cvs.drawJourney(config);
-    cvs.drawHands(config);
+    cvs.clearClock(state);
+    if (journeyNotOver(state)) cvs.drawJourney(state);
+    cvs.drawHands(state);
   };
 
-  if (!useDummy) manageJourney();
+  if (!cfg.useDummy) manageJourney();
   cycleInfo();
   draw();
 
-  if (!useDummy) setInterval(() => { if (!inDowntime()) manageJourney(); }, 1000 * 60 * 1.5);
+  if (!cfg.useDummy) setInterval(() => { if (!inDowntime()) manageJourney(); }, 1000 * 60 * 1.5);
   setInterval(draw, 400);
   setInterval(cycleInfo, 30 * 1000);
+  setInterval(() => {
+    console.clear();
+    console.log("state.problems", state.problems);
+  }, 1000 * 60 * 15);
 };
 
 main();

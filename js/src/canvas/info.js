@@ -1,8 +1,8 @@
 import { Temporal } from "@js-temporal/polyfill";
-import { earlierOf, stopInFuture } from "../helpers";
+import { earlierOf, journeyNotOver, stopInFuture } from "../helpers";
 
-const renderFrames = (frames, pos, cfg, callback) => {
-  const { ctxs, width, height } = cfg;
+const renderFrames = (frames, pos, state, callback) => {
+  const { ctxs, width, height } = state;
   const ctx = ctxs.info;
   ctx.fillStyle = "white";
   const promises = frames.map((t, i) => new Promise((resolve) => {
@@ -16,11 +16,11 @@ const renderFrames = (frames, pos, cfg, callback) => {
   return Promise.all(promises);
 };
 
-const type = (text, animation, cfg, callback) => {
+const type = (text, animation, state, callback) => {
   if (!text) return new Promise((r) => { r(); });
   const {
     center, radius, ctxs, scaleFactor,
-  } = cfg;
+  } = state;
   const ctx = ctxs.info;
   ctx.font = `${22 * scaleFactor}px "Courier New", sans-serif`;
   ctx.fillStyle = "white";
@@ -43,7 +43,7 @@ const type = (text, animation, cfg, callback) => {
       else steps.push(portion);
     }
 
-    return renderFrames(steps, pos, cfg, callback);
+    return renderFrames(steps, pos, state, callback);
   }
   return new Promise((resolve) => {
     ctx.fillText(text, pos.x - offset, pos.y); resolve();
@@ -61,8 +61,8 @@ const getNextStop = ({ stops, now }) => {
     : undefined;
 };
 
-const getTrainInfo = (cfg) => {
-  const next = getNextStop(cfg);
+const getTrainInfo = (state) => {
+  const next = getNextStop(state);
   const destination = next.futureStops?.length
     ? next.futureStops[next.futureStops.length - 1]
     : next.name;
@@ -71,21 +71,28 @@ const getTrainInfo = (cfg) => {
   return destination && { type: "train", text: `${cat} ${line} nach ${destination}` };
 };
 
-const getNextStopInfo = (cfg) => {
-  const next = getNextStop(cfg);
+const getNextStopInfo = (state) => {
+  const next = getNextStop(state);
   return next && { type: "nextStop", text: `Nächste Halt: ${next.name}` };
 };
 
-const getNextInfo = (cfg) => (
-  cfg.info?.type === "train" ? getNextStopInfo(cfg) : getTrainInfo(cfg)
+const getNextInfo = (state) => {
+  let next = {};
+  if (journeyNotOver(state)) {
+    next = state.info?.type === "train"
+      ? getNextStopInfo(state)
+      : getTrainInfo(state);
+  }
+  if (state.problems.length) next.text = `${next.text || ""} !`;
+  return next;
+};
+
+const transitionInfo = (oldInfo, newInfo, state, clbck) => (
+  type(oldInfo, "shrinking", state, clbck)
+    .then(() => type(newInfo, "growing", state, clbck))
 );
 
-const transitionInfo = (oldInfo, newInfo, cfg, clbck) => (
-  type(oldInfo, "shrinking", cfg, clbck)
-    .then(() => type(newInfo, "growing", cfg, clbck))
-);
-
-const drawInfo = (cfg) => type(cfg?.info?.text, false, cfg);
+const drawInfo = (state) => type(state?.info?.text, false, state);
 
 export default {
   getNextInfo,

@@ -20,14 +20,12 @@ export const getPosition = (r, theta, center) => ({
   y: center.y - (r * Math.sin(theta)),
 });
 
-export const prepCanvasGetConfig = () => {
+export const prepCanvasGetState = () => {
   const clock = document.getElementById("clock");
   const info = document.getElementById("info");
 
-  // const width = window.innerWidth - 17; // -17 to avoid scrollbar
-  const width = window.innerWidth; // -17 to avoid scrollbar
+  const width = window.innerWidth;
   const height = window.innerHeight;
-  // const height = window.innerHeight - 4;
   const center = { x: width / 2, y: height / 2 };
   const radius = height / 2.5;
   const scaleFactor = radius / 319;
@@ -47,5 +45,6 @@ export const prepCanvasGetConfig = () => {
     scaleFactor,
     width,
     height,
+    problems: [],
   };
 };

@@ -1,9 +1,9 @@
 import { getAnglesForTime, getPosition } from "./canvasFns";
 
-const drawHands = (cfg) => {
+const drawHands = (state) => {
   const {
     ctxs, center, radius, now, scaleFactor,
-  } = cfg;
+  } = state;
   const ctx = ctxs.clock;
   const { minute, hour } = getAnglesForTime(now);
   const minEnd = getPosition(radius * 0.9, minute, center);
