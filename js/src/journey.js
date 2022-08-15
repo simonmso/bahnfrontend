@@ -135,7 +135,10 @@ export const getJourney = async () => {
     nearest = await findSoonestFromRandom(true);
   }
 
-  if (!nearest) throw Error("No journey found at this time");
+  if (!nearest) {
+    console.log("No journey found at this time");
+    return undefined;
+  }
   console.log("found nearest:\n", toS(nearest));
 
   return buildJourneyForNextHour(nearest);
