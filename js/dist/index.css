@@ -6,6 +6,66 @@ body {
 #container {
     height: 100vh;
     width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.dot { 
+    border-radius: 1rem;
+    width: 0.5rem;
+    height: 0.5rem;
+    background: white;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform:
+        rotate(calc(1turn * var(--i) / 60))
+        translate(min(40vh, 40vw))
+}
+#dotsContainer {
+    position: fixed;
+}
+#handsContainer {
+    position: fixed;
+}
+.hand {
+    background-color: white;
+    height: 0.3rem;
+    position: fixed;
+    --hour: 1;
+    --minute: 47;
+    --second: 10;
+}
+#minuteHand {
+    --w: min(35vh, 35vw);
+    width: var(--w);
+    --theta: calc(
+        (1turn * var(--minute) / 60)
+        + (1turn * var(--second) / 3600)
+        - 0.25turn
+    );
+    transform:
+        rotate(var(--theta))
+        translate(
+            calc(var(--w) * 0.5 * (1 - cos(var(--theta)))),
+            calc(var(--w) * sin(var(--theta)) * 0.5)
+        )
+
+}
+#hourHand {
+    --w: min(23vh, 23vw);
+    width: var(--w);
+    --theta: calc(
+        (1turn * var(--hour) / 12)
+        + (1turn * var(--minute) / 720)
+        + (1turn * var(--second) / (12 * 60 * 60))
+        - 0.25turn
+    );
+    transform: rotate(var(--theta))
+    translate(
+        calc(var(--w) * 0.5 * (1 - cos(var(--theta)))),
+        calc(var(--w) * sin(var(--theta)) * 0.5)
+    )
 }
 canvas {
     outline-style: solid;
