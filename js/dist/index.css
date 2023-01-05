@@ -10,16 +10,30 @@ body {
     justify-content: center;
     align-items: center;
 }
-.dot { 
+#clock {
+    --hour: 1;
+    --minute: 47;
+    --second: 10;
+    --millisecond: 10;
+}
+.dot {
+    --dotMin: calc(var(--i) + 0.1);
+    /* add 0.1 to avoid a divide by zero */
+    /* --minInFuture finds how far the dot is from the current time */
+    --minInFuture: calc(
+        var(--dotMin) - var(--minute)
+        + (60 * (max(var(--dotMin), var(--minute)) - var(--dotMin)) / (var(--minute) - var(--dotMin)))
+    );
     border-radius: 1rem;
     width: 0.5rem;
     height: 0.5rem;
-    background: white;
+    /* this is responsible for the dots becoming fading out */
+    background: hsl(0 0% min(100%, ((var(--minInFuture) * -0.05) + 3) * 100%));
     position: fixed;
     left: 50%;
     top: 50%;
     transform:
-        rotate(calc(1turn * var(--i) / 60))
+        rotate(calc((1turn * var(--i) / 60) - 0.25turn))
         translate(min(40vh, 40vw))
 }
 #dotsContainer {
@@ -32,16 +46,14 @@ body {
     background-color: white;
     height: 0.3rem;
     position: fixed;
-    --hour: 1;
-    --minute: 47;
-    --second: 10;
 }
 #minuteHand {
     --w: min(35vh, 35vw);
     width: var(--w);
     --theta: calc(
         (1turn * var(--minute) / 60)
-        + (1turn * var(--second) / 3600)
+        + (1turn * var(--second) / (60 * 60))
+        + (1turn * var(--millisecond) / (60 * 60 * 1000))
         - 0.25turn
     );
     transform:
