@@ -18,20 +18,23 @@ const createClock = () => {
     // get other references
     const clock = document.getElementById('clock');
     const stopsContainer = document.getElementById('stopsContainer');
+    const stopCurveContainer = document.getElementById('stopCurveContainer');
 
     return {
         dots,
         clock,
         stopsContainer,
+        stopCurveContainer,
     };
 };
 
 const initializeState = () => {
-    const elements = createClock();
     const state = {
-        elements,
+        elements: createClock(),
         problems: [],
         now: Temporal.Now.zonedDateTimeISO(),
+        // now: Temporal.Now.zonedDateTimeISO().with({ minute: 53, second: 32 }),
+        // now: Temporal.Now.zonedDateTimeISO(),
     };
     if (cfg.useDummy) state.stops = dummy;
 

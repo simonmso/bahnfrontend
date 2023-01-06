@@ -1,4 +1,4 @@
-// import { Temporal } from '@js-temporal/polyfill';
+import { Temporal } from '@js-temporal/polyfill';
 import { getJourney, completeNextHour, rehydrateStops } from './journey';
 // import cvs from './canvas';
 import { journeyNotOver, printStops } from './helpers';
@@ -27,13 +27,13 @@ const main = async () => {
     // };
 
     const refreshTime = () => {
+        state.now = Temporal.Now.zonedDateTimeISO();
+        // state.now = state.now.add({ seconds: 10 }); // make the clock run 30 times faster
         // state.now = Temporal.Now.zonedDateTimeISO();
-        state.now = state.now.add({ seconds: 30 }); // make the clock run 30 times faster
         d.updateHands(state);
         d.updateStops(state);
         d.updateDots(state);
-    // state.now = Temporal.Now.zonedDateTimeISO().add({ minutes: 53 });
-    // state.now = Temporal.Now.zonedDateTimeISO().with({ minute: 10 });
+        // console.log('state', state);
     };
 
     // const cycleInfo = () => {
@@ -75,7 +75,7 @@ const main = async () => {
     // if (!cfg.useDummy) setInterval(() => {
     //   if (!inDowntime()) manageJourney(); }, 1000 * 60 * 1.5)
     // };
-    setInterval(refreshTime, 400);
+    setInterval(refreshTime, 300);
     // setInterval(cycleInfo, 30 * 1000);
     setInterval(() => {
         console.clear();

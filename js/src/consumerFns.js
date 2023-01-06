@@ -42,7 +42,9 @@ const nodeToStop = (node) => {
     });
 
     newStop.real = true;
-    newStop.elements = {};
+    newStop.elements = {
+        curve: [],
+    };
     newStop.asString = toS(newStop);
     return newStop;
 };

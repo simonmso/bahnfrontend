@@ -1,8 +1,10 @@
 import { Temporal } from '@js-temporal/polyfill';
 
+// todo: add a dummy stop that goes from 55 - 04
+
 const now = Temporal.Now.zonedDateTimeISO('Europe/Berlin');
 const withs = [
-    [undefined, 5], [18, 20], [38, 41], [44, 45], [55, 57], [10, 12], [22, 24], [33, undefined],
+    [undefined, 5], [18, 20], [38, 41], [44, 45], [55, 59], [10, 12], [22, 24], [33, undefined],
 ];
 const add = [0, 0, 0, 0, 0, 1, 1, 1];
 const names = [
@@ -18,11 +20,15 @@ const stops = names.map((n, i) => ({
     category: 'RE',
     line: '85',
     futureStops: names.slice(i + 1),
-    arrivalTime: withs[i][0] ? now.add({ hours: add[i] }).with({ minute: withs[i][0] }) : undefined,
-    departureTime: withs[i][1]
-        ? now.add({ hours: add[i] }).with({ minute: withs[i][1] })
+    arrivalTime: withs[i][0]
+        ? now.add({ hours: add[i] }).with({ minute: withs[i][0], second: 0 })
         : undefined,
-    elements: {},
+    departureTime: withs[i][1]
+        ? now.add({ hours: add[i] }).with({ minute: withs[i][1], second: 0 })
+        : undefined,
+    elements: {
+        curve: [],
+    },
 }));
 
 export default stops;
