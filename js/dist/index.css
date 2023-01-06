@@ -35,10 +35,9 @@ body {
     );
     background: hsl(0 0% min(100%, ((var(--minInFuture) * -0.05) + 3) * 100%));
 
-
     border-radius: 1rem;
-    width: 0.5rem;
-    height: 0.5rem;
+    width: 0.4rem;
+    height: 0.4rem;
     position: fixed;
     transform:
         rotate(calc((1turn * var(--i) / 60) - 0.25turn))
@@ -47,6 +46,9 @@ body {
 .dot.stop {
     width: 1rem;
     height: 1rem;
+}
+.dot[hide=true] {
+    background: hsl(0, 0%, 0%);
 }
 .hand {
     background-color: white;

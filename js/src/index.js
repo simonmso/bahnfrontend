@@ -4,7 +4,7 @@ import { getJourney, completeNextHour, rehydrateStops } from './journey';
 import { journeyNotOver, printStops } from './helpers';
 import cfg from './config.json';
 import initializeState from './init';
-import d from './docHandler';
+import d from './domHandler';
 
 const main = async () => {
     const state = initializeState();
@@ -31,6 +31,7 @@ const main = async () => {
         state.now = state.now.add({ seconds: 30 }); // make the clock run 30 times faster
         d.updateHands(state);
         d.updateStops(state);
+        d.updateDots(state);
     // state.now = Temporal.Now.zonedDateTimeISO().add({ minutes: 53 });
     // state.now = Temporal.Now.zonedDateTimeISO().with({ minute: 10 });
     };

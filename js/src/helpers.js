@@ -56,6 +56,7 @@ export const stopInPast = (stop, now) => {
     return Temporal.ZonedDateTime.compare(t, now) <= 0;
 };
 
+// TODO: pretty sure this can be deleted once the canvas functions are
 export const stopInNext = (stop, now, duration, partiallyCounts = false) => {
     const t = partiallyCounts
         ? laterOf(stop.departureTime, stop.arrivalTime)
