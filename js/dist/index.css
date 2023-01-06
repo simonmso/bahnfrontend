@@ -3,9 +3,8 @@ body {
     margin: 0;
     padding: 0;
 }
-#container {
-    height: 100vh;
-    width: 100vw;
+.container {
+    position: fixed;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -15,37 +14,45 @@ body {
     --minute: 47;
     --second: 10;
     --millisecond: 10;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 .dot {
-    --dotMin: calc(var(--i) + 0.1);
+    /* this is all responsible for the dots fading out */
     /* add 0.1 to avoid a divide by zero */
+    --dotMin: calc(var(--i) - 0.1);
+    /* u is similar to the heaviside step function
+    it is 1 when --dotMin < --minute and 0 when --dotMin > --minute
+    this is used instead of some form of if/else */
+    --u: calc((max(var(--dotMin), var(--minute)) - var(--dotMin)) / (var(--minute) - var(--dotMin)));
     /* --minInFuture finds how far the dot is from the current time */
     --minInFuture: calc(
         var(--dotMin) - var(--minute)
-        + (60 * (max(var(--dotMin), var(--minute)) - var(--dotMin)) / (var(--minute) - var(--dotMin)))
+        + (60 * var(--u))
     );
+    background: hsl(0 0% min(100%, ((var(--minInFuture) * -0.05) + 3) * 100%));
+
+
     border-radius: 1rem;
     width: 0.5rem;
     height: 0.5rem;
-    /* this is responsible for the dots becoming fading out */
-    background: hsl(0 0% min(100%, ((var(--minInFuture) * -0.05) + 3) * 100%));
     position: fixed;
-    left: 50%;
-    top: 50%;
     transform:
         rotate(calc((1turn * var(--i) / 60) - 0.25turn))
         translate(min(40vh, 40vw))
 }
-#dotsContainer {
-    position: fixed;
-}
-#handsContainer {
-    position: fixed;
+.dot.stop {
+    width: 1rem;
+    height: 1rem;
 }
 .hand {
     background-color: white;
     height: 0.3rem;
     position: fixed;
+    border-radius: 0.2rem;
 }
 #minuteHand {
     --w: min(35vh, 35vw);
@@ -58,11 +65,7 @@ body {
     );
     transform:
         rotate(var(--theta))
-        translate(
-            calc(var(--w) * 0.5 * (1 - cos(var(--theta)))),
-            calc(var(--w) * sin(var(--theta)) * 0.5)
-        )
-
+        translate(calc(var(--w) / 2))
 }
 #hourHand {
     --w: min(23vh, 23vw);
@@ -74,10 +77,7 @@ body {
         - 0.25turn
     );
     transform: rotate(var(--theta))
-    translate(
-        calc(var(--w) * 0.5 * (1 - cos(var(--theta)))),
-        calc(var(--w) * sin(var(--theta)) * 0.5)
-    )
+    translate(calc(var(--w) / 2))
 }
 canvas {
     outline-style: solid;

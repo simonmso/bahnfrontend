@@ -1,3 +1,6 @@
+const ESLintPlugin = require('eslint-webpack-plugin');
+
 module.exports = {
-  mode: "development",
+    mode: 'development',
+    plugins: [new ESLintPlugin()],
 };
