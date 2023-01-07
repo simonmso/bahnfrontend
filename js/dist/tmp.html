@@ -4,19 +4,12 @@
 </head>
 <body>
     <div id="clock">
-        <div id="dotsContainer" class="container">
+        <svg id="svg" viewBox="-1.2 -1.2 2.4 2.4" height="100%" width="100%">
+            <line id="minuteHand" class="hand" x1="0" y1="0" x2="0" y2="0.8"/>
+            <line id="hourHand" class="hand" x1="0" y1="0" x2="0" y2="0.5"/>
             <!-- the minute dots end up here -->
-        </div>
-        <div id="handsContainer" class="container">
-            <div id="minuteHand" class="hand"></div>
-            <div id="hourHand" class="hand"></div>
-        </div>
-        <div id="stopsContainer" class="container">
-            <!-- the stop dots end up here -->
-        </div>
-        <div id="stopCurveContainer" class="container">
             <!-- the stop curves end up here -->
-        </div>
+        </svg>
     </div>
     <script src="main.js"></script>
 </body>

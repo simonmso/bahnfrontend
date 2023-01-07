@@ -1,30 +1,20 @@
 import { Temporal } from '@js-temporal/polyfill';
 import dummy from './dummy';
 import cfg from './config.json';
+import d from './domHandler';
 
 const createClock = () => {
-    // create 60 dots, one in each minute position
-    const dotsContainer = document.getElementById('dotsContainer');
-    const dots = [];
-
-    for (let i = 0; i <= 59; i++) {
-        const newDot = document.createElement('div');
-        newDot.className = 'dot';
-        newDot.style = `--i:${i}`;
-        dotsContainer.append(newDot);
-        dots.push(newDot);
-    }
-
-    // get other references
-    const clock = document.getElementById('clock');
-    const stopsContainer = document.getElementById('stopsContainer');
-    const stopCurveContainer = document.getElementById('stopCurveContainer');
+    const svg = document.getElementById('svg');
 
     return {
-        dots,
-        clock,
-        stopsContainer,
-        stopCurveContainer,
+        svg,
+        dots: d.createDots(svg),
+        clock: document.getElementById('clock'),
+        stopCurveContainer: document.getElementById('stopCurveContainer'),
+        hands: {
+            minute: document.getElementById('minuteHand'),
+            hour: document.getElementById('hourHand'),
+        },
     };
 };
 
@@ -37,6 +27,8 @@ const initializeState = () => {
         // now: Temporal.Now.zonedDateTimeISO(),
     };
     if (cfg.useDummy) state.stops = dummy;
+
+    d.updateHands(state);
 
     return state;
 };

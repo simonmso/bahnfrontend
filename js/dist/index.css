@@ -33,58 +33,18 @@ body {
         var(--dotMin) - var(--minute)
         + (60 * var(--u))
     );
-    background: hsl(0 0% min(100%, ((var(--minInFuture) * -0.05) + 3) * 100%));
-
-    border-radius: 1rem;
-    width: 0.4rem;
-    height: 0.4rem;
-    position: fixed;
-    transform:
-        rotate(calc((1turn * var(--i) / 60) - 0.25turn))
-        translate(min(40vh, 40vw))
+    fill: hsl(0 0% min(100%, ((var(--minInFuture) * -0.05) + 3) * 100%));
 }
 .dot[hide=true] {
     background: hsl(0, 0%, 0%);
 }
-.dot.stop {
-    width: 1rem;
-    height: 1rem;
-}
-.dot.stopSegment {
-    /* WORKING ON: dynamically set segment width */
-    width: 0.4rem;
-    height: 0.7rem;
+.curve {
+    stroke: white;
+    stroke-width: 0.02;
 }
 .hand {
-    background-color: white;
-    height: 0.3rem;
-    position: fixed;
-    border-radius: 0.2rem;
-}
-#minuteHand {
-    --w: min(35vh, 35vw);
-    width: var(--w);
-    --theta: calc(
-        (1turn * var(--minute) / 60)
-        + (1turn * var(--second) / (60 * 60))
-        + (1turn * var(--millisecond) / (60 * 60 * 1000))
-        - 0.25turn
-    );
-    transform:
-        rotate(var(--theta))
-        translate(calc(var(--w) / 2))
-}
-#hourHand {
-    --w: min(23vh, 23vw);
-    width: var(--w);
-    --theta: calc(
-        (1turn * var(--hour) / 12)
-        + (1turn * var(--minute) / 720)
-        + (1turn * var(--second) / (12 * 60 * 60))
-        - 0.25turn
-    );
-    transform: rotate(var(--theta))
-    translate(calc(var(--w) / 2))
+    stroke: white;
+    stroke-width: 0.01;
 }
 canvas {
     outline-style: solid;

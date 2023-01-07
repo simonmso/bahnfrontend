@@ -26,9 +26,7 @@ const stops = names.map((n, i) => ({
     departureTime: withs[i][1]
         ? now.add({ hours: add[i] }).with({ minute: withs[i][1], second: 0 })
         : undefined,
-    elements: {
-        curve: [],
-    },
+    elements: {},
 }));
 
 export default stops;
