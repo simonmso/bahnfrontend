@@ -1,7 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill';
 
-// todo: add a dummy stop that goes from 55 - 04
-
 const now = Temporal.Now.zonedDateTimeISO('Europe/Berlin');
 const withs = [
     [undefined, 5], [18, 20], [38, 41], [44, 45], [55, 59], [10, 12], [22, 24], [33, undefined],
@@ -28,5 +26,8 @@ const stops = names.map((n, i) => ({
         : undefined,
     elements: {},
 }));
+
+// creates a stop that spans the change in hour. Good edge case
+stops[4].departureTime = stops[4].departureTime.add({ minutes: 5 });
 
 export default stops;

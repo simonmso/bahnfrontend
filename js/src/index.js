@@ -1,4 +1,4 @@
-import { Temporal } from '@js-temporal/polyfill';
+// import { Temporal } from '@js-temporal/polyfill';
 import { getJourney, completeNextHour, rehydrateStops } from './journey';
 // import cvs from './canvas';
 import { journeyNotOver, printStops } from './helpers';
@@ -8,7 +8,6 @@ import d from './domHandler';
 
 const main = async () => {
     const state = initializeState();
-
     // downtime code for when this was running on the pi
     // state.downtime = {
     //   start: { hour: 21, minute: 25, second: 0 },
@@ -27,8 +26,16 @@ const main = async () => {
     // };
 
     const refreshTime = () => {
-        state.now = Temporal.Now.zonedDateTimeISO();
-        // state.now = state.now.add({ seconds: 10 }); // make the clock run 30 times faster
+        // state.now = Temporal.Now.zonedDateTimeISO();
+        state.now = state.now.add({ seconds: 20 }); // make the clock run 30 times faster
+        // for performance reasons, we don't want to always be using the ZonedDateTime.minute method
+        // this way, we can call it once and use it anywhere we would now.minute, now.second, etc.
+        state.pNow = {
+            hour: state.now.hour,
+            minute: state.now.minute,
+            second: state.now.second,
+            millisecond: state.now.millisecond,
+        };
         // state.now = Temporal.Now.zonedDateTimeISO();
         d.updateHands(state);
         d.updateStops(state);

@@ -28,18 +28,20 @@ body {
     it is 1 when --dotMin < --minute and 0 when --dotMin > --minute
     this is used instead of some form of if/else */
     --u: calc((max(var(--dotMin), var(--minute)) - var(--dotMin)) / (var(--minute) - var(--dotMin)));
+    --curMin: calc(var(--minute) + (var(--second) / 60) + (var(--millisecond) / (60 * 1000)));
     /* --minInFuture finds how far the dot is from the current time */
     --minInFuture: calc(
-        var(--dotMin) - var(--minute)
+        var(--dotMin) - var(--curMin)
         + (60 * var(--u))
     );
-    fill: hsl(0 0% min(100%, ((var(--minInFuture) * -0.05) + 3) * 100%));
+    --slope: calc(var(--gradSteepness) * -0.01);
+    --yint: calc(var(--gradIntercept) * -1 * var(--slope));
+    fill: hsl(0 0% min(100%, (((var(--minInFuture) * var(--slope)) + var(--yint)) * 100%)));
 }
 .dot[hide=true] {
-    background: hsl(0, 0%, 0%);
+    fill: hsl(0, 0%, 0%);
 }
 .curve {
-    stroke: white;
     stroke-width: 0.02;
 }
 .hand {

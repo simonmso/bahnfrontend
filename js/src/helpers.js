@@ -31,6 +31,10 @@ export const laterOf = (t1, t2) => {
     return Temporal.ZonedDateTime.compare(t1, t2) >= 0 ? t1 : t2;
 };
 
+export const shorterOf = (d1, d2) => (
+    Temporal.Duration.compare(d1, d2) <= 0 ? d1 : d2
+);
+
 export const lessThanXApart = (t1, t2, duration) => (
     Temporal.Duration.compare(
         duration,
@@ -56,11 +60,10 @@ export const stopInPast = (stop, now) => {
     return Temporal.ZonedDateTime.compare(t, now) <= 0;
 };
 
-// TODO: pretty sure this can be deleted once the canvas functions are
 export const stopInNext = (stop, now, duration, partiallyCounts = false) => {
     const t = partiallyCounts
-        ? laterOf(stop.departureTime, stop.arrivalTime)
-        : earlierOf(stop.departureTime, stop.arrivalTime);
+        ? earlierOf(stop.departureTime, stop.arrivalTime)
+        : laterOf(stop.departureTime, stop.arrivalTime);
     return lessThanXApart(t, now, duration) && stopInFuture(stop, now, partiallyCounts);
 };
 
@@ -77,3 +80,22 @@ export const journeyNotOver = (state) => (
 export const angleForMinute = (m) => ((m / 60) - 0.25) * 2 * Math.PI;
 
 export const angleForHour = (h) => ((h / 12) - 0.25) * 2 * Math.PI;
+
+// xIntercept is the distance (in minutes) the first black dot should be
+const getLightnessFunc = (steepness, xIntercept) => {
+    const yInt = xIntercept * steepness;
+    return (minute) => Math.max(0, Math.min(100, ((minute * -steepness) + yInt)));
+};
+
+// mimics a conic gradient
+export const hslForMinute = (minute, now) => {
+    const n = now.minute + (now.second / 60) + (now.millisecond / (60 * 1000));
+    const m = minute + 0.1;
+    const u = m < n ? 60 : 0;
+    const minInFuture = m - n + u;
+
+    const fadeSteepness = 7;
+    const lightForMin = getLightnessFunc(fadeSteepness, 60);
+
+    return `hsl(0, 0%, ${lightForMin(minInFuture)}%)`;
+};
