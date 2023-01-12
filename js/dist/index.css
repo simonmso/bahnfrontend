@@ -1,5 +1,5 @@
 body {
-    background-color: rgb(0, 0, 0);
+    background-color: hsl(0, 0%, 9%);
     margin: 0;
     padding: 0;
 }
@@ -36,17 +36,24 @@ body {
     );
     --slope: calc(var(--gradSteepness) * -0.01);
     --yint: calc(var(--gradIntercept) * -1 * var(--slope));
-    fill: hsl(0 0% min(100%, (((var(--minInFuture) * var(--slope)) + var(--yint)) * 100%)));
+    fill: hsl(0 0% max(9%, min(100%, (((var(--minInFuture) * var(--slope)) + var(--yint)) * 100%))));
 }
 .dot[hide=true] {
-    fill: hsl(0, 0%, 0%);
+    fill: transparent;
+}
+.trainBody[hide=true] {
+    fill: transparent;
 }
 .curve {
     stroke-width: 0.02;
+    fill: transparent;
 }
 .hand {
     stroke: white;
     stroke-width: 0.01;
+}
+.trainBody {
+    fill: white;
 }
 canvas {
     outline-style: solid;

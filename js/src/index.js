@@ -4,7 +4,7 @@ import { getJourney, completeNextHour, rehydrateStops } from './journey';
 import { journeyNotOver, printStops } from './helpers';
 import cfg from './config.json';
 import initializeState from './init';
-import d from './domHandler';
+import d from './dom';
 
 const main = async () => {
     const state = initializeState();
@@ -27,7 +27,7 @@ const main = async () => {
 
     const refreshTime = () => {
         // state.now = Temporal.Now.zonedDateTimeISO();
-        state.now = state.now.add({ seconds: 20 }); // make the clock run 30 times faster
+        state.now = state.now.add({ seconds: 50 }); // make the clock run 30 times faster
         // for performance reasons, we don't want to always be using the ZonedDateTime.minute method
         // this way, we can call it once and use it anywhere we would now.minute, now.second, etc.
         state.pNow = {
@@ -40,6 +40,7 @@ const main = async () => {
         d.updateHands(state);
         d.updateStops(state);
         d.updateDots(state);
+        d.updateTrain(state);
         // console.log('state', state);
     };
 

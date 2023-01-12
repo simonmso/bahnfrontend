@@ -1,15 +1,17 @@
 import { Temporal } from '@js-temporal/polyfill';
 import dummy from './dummy';
 import cfg from './config.json';
-import d from './domHandler';
+import d from './dom';
 
 const createClock = () => {
-    const svg = document.getElementById('svg');
+    const dotsContainer = document.getElementById('dotsContainer');
+    const trainContainer = document.getElementById('trainContainer');
 
     return {
-        svg,
-        dots: d.createDots(svg),
+        dots: d.createDots(dotsContainer),
+        train: d.createTrain(trainContainer),
         defs: document.getElementById('defs'),
+        stopsContainer: document.getElementById('stopsContainer'),
         clock: document.getElementById('clock'),
         hands: {
             minute: document.getElementById('minuteHand'),
