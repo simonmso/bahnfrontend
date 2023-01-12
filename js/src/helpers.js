@@ -1,4 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill';
+import cfg from './config.json';
 
 const pad = (n) => n.toString().padStart(2, '0');
 
@@ -94,8 +95,10 @@ export const hslForMinute = (minute, now) => {
     const u = m < n ? 60 : 0;
     const minInFuture = m - n + u;
 
-    const fadeSteepness = 7;
-    const lightForMin = getLightnessFunc(fadeSteepness, 50);
+    const lightForMin = getLightnessFunc(
+        cfg.dots.gradientSteepness,
+        cfg.dots.gradientIntercept,
+    );
 
     return `hsl(0 0% ${lightForMin(minInFuture)}%)`;
 };

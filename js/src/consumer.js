@@ -2,10 +2,9 @@ import { Temporal } from '@js-temporal/polyfill';
 import {
     filterNodesByArDp, formatStopsFromTimetable, getStringFromDate,
 } from './consumerFns';
+import keys from './keys.json';
 
-// TODO move these to keys.json
-const DBClientID = '319c7843f0ffd25e9df9d59bf14afe14';
-const DBApiKey = 'bc235c81a107a57934a015cca40d68a5';
+const { DBClientID, DBApiKey } = keys;
 let totalRequests = 0;
 const resetRequests = () => {
     console.log('req reset'); totalRequests = 0;

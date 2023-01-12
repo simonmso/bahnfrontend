@@ -1,4 +1,5 @@
 import { angleForMinute, journeyNotOver, timeInNext } from '../helpers';
+import cfg from '../config.json';
 
 export const createDot = (minute) => {
     const newDot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -8,8 +9,9 @@ export const createDot = (minute) => {
     newDot.setAttribute('r', 0.01);
     newDot.setAttribute('hide', true);
     newDot.classList.add('dot');
-    // TODO: the steepness and intercept should actually be pulled from somewhere
-    newDot.style = `--i:${minute}; --gradSteepness:${7}; --gradIntercept:${50};`;
+    const gs = cfg.dots.gradientSteepness;
+    const gi = cfg.dots.gradientIntercept;
+    newDot.style = `--i:${minute}; --gradSteepness:${gs}; --gradIntercept:${gi};`;
     return newDot;
 };
 export const createDots = (parent) => {
@@ -33,7 +35,8 @@ export const updateDots = (state) => {
     if (!journeyNotOver(state)) {
         elements.dots.forEach((d) => d.setAttribute('hide', true));
     }
-    else if (timeInNext(endStop.arrivalTime, { minutes: 59 }, now)) {
+    // hide dots that are past the last stop
+    else if (endStop && timeInNext(endStop.arrivalTime, { minutes: 59 }, now)) {
         elements.dots.forEach((d, i) => {
             const dotDiff = i + 0.1 < pNow.minute ? i - pNow.minute + 60 : i - pNow.minute;
             // using epoch seconds instead of .since() for performance reasons
@@ -41,6 +44,7 @@ export const updateDots = (state) => {
             d.setAttribute('hide', dotDiff > stopDiff);
         });
     }
+    // show dots
     else {
         elements.dots.forEach((d) => d.setAttribute('hide', false));
     }
