@@ -1,0 +1,7 @@
+{
+    "useDummy": false,
+    "dots": {
+        "gradientSteepness": 7,
+        "gradientIntercept": 50
+    }
+}

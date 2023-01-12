@@ -1,0 +1,69 @@
+body {
+    background-color: hsl(0, 0%, 9%);
+    margin: 0;
+    padding: 0;
+}
+#clock {
+    --hour: 1;
+    --minute: 47;
+    --second: 10;
+    --millisecond: 10;
+    max-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding: 3rem;
+    gap: 1rem;
+}
+.dot {
+    /* this is all responsible for the dots fading out */
+    /* add 0.1 to avoid a divide by zero */
+    --dotMin: calc(var(--i) - 0.1);
+    /* u is similar to the heaviside step function
+    it is 1 when --dotMin < --minute and 0 when --dotMin > --minute
+    this is used instead of some form of if/else */
+    --u: calc((max(var(--dotMin), var(--minute)) - var(--dotMin)) / (var(--minute) - var(--dotMin)));
+    --curMin: calc(var(--minute) + (var(--second) / 60) + (var(--millisecond) / (60 * 1000)));
+    /* --minInFuture finds how far the dot is from the current time */
+    --minInFuture: calc(
+        var(--dotMin) - var(--curMin)
+        + (60 * var(--u))
+    );
+    --slope: calc(var(--gradSteepness) * -0.01);
+    --yint: calc(var(--gradIntercept) * -1 * var(--slope));
+    fill: hsl(0 0% max(9%, min(100%, (((var(--minInFuture) * var(--slope)) + var(--yint)) * 100%))));
+}
+.dot[hide=true] {
+    fill: transparent;
+}
+.trainBody[hide=true] {
+    fill: transparent;
+}
+.curve {
+    stroke-width: 0.02;
+    fill: transparent;
+}
+.hand {
+    stroke: white;
+    stroke-width: 0.01;
+}
+.trainBody {
+    fill: white;
+}
+#svg {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+}
+#info {
+    color: hsl(0 0% 85%);
+    padding: 1rem;
+    font-family: Courier New, monospace;
+    font-size: 1.4rem;
+    font-weight: bold;
+    min-height: 1.4rem;
+    text-align: center;
+}
