@@ -37,7 +37,6 @@ export const updateDots = (state) => {
         elements.dots.forEach((d, i) => {
             const dotDiff = i + 0.1 < pNow.minute ? i - pNow.minute + 60 : i - pNow.minute;
             const stopDiff = endStop.arrivalTime.since(now).minutes;
-            console.log(i, 'dotDiff', dotDiff, 'stopDiff', stopDiff);
             d.setAttribute('hide', dotDiff > stopDiff);
         });
     }
