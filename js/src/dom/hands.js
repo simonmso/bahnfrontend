@@ -12,9 +12,9 @@ const updateHands = (state) => {
     elements.hands.hour.setAttribute('y2', 0.5 * Math.sin(thetaH));
 
     // used for gradient, might delete later
-    elements.clock.style = `--hour: ${state.now.hour};
-                                --minute: ${state.now.minute};
-                                --second: ${state.now.second};
-                                --millisecond: ${state.now.millisecond};`;
+    elements.clock.style = `--hour: ${now.hour};
+                                --minute: ${now.minute};
+                                --second: ${now.second};
+                                --millisecond: ${now.millisecond};`;
 };
 export default updateHands;

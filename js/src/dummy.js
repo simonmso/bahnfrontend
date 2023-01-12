@@ -1,4 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill';
+import journeyFns from './journeyFns';
 
 const now = Temporal.Now.zonedDateTimeISO('Europe/Berlin');
 const withs = [
@@ -30,4 +31,4 @@ const stops = names.map((n, i) => ({
 // creates a stop that spans the change in hour. Good edge case
 stops[4].departureTime = stops[4].departureTime.add({ minutes: 5 });
 
-export default stops;
+export default stops.map((s) => journeyFns.setPerformativeTimes(s));

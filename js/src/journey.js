@@ -16,6 +16,7 @@ const updateWithDelays = (stops, evaNo) => (
     API.getAllChanges(evaNo)
         .then((changes) => stops.map((s) => journey.applyChangesToStop(s, changes)))
         .then((updated) => updated.map((s) => journey.confirmActualTime(s)))
+        .then((confirmed) => confirmed.map((s) => journey.setPerformativeTimes(s)))
 );
 
 const updateStopWithDelays = (s) => {
@@ -23,10 +24,12 @@ const updateStopWithDelays = (s) => {
         if (!s.departureTime && !s.arrivalTime) { // if delays have never been applied
             return API.getAllChanges(s.eva)
                 .then((changes) => journey.applyChangesToStop(s, changes))
-                .then((changed) => journey.confirmActualTime(changed));
+                .then((changed) => journey.confirmActualTime(changed))
+                .then((confirmed) => journey.setPerformativeTimes(confirmed));
         }
         return API.getRecentChanges(s.eva)
-            .then((changes) => journey.applyChangesToStop(s, changes));
+            .then((changes) => journey.applyChangesToStop(s, changes))
+            .then((confirmed) => journey.setPerformativeTimes(confirmed));
     }
     return new Promise((resolve) => {
         resolve(s);

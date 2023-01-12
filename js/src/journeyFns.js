@@ -9,6 +9,27 @@ const confirmActualTime = (stop) => {
     return s;
 };
 
+// repeated get calls to ZonedDateTime.second etc. add up quickly
+// therefore, we just do it once here
+const setPerformativeTimes = (stop) => {
+    const s = { ...stop };
+    s.p = {
+        arrivalTime: s.arrivalTime
+            ? {
+                hour: s.arrivalTime.hour,
+                minute: s.arrivalTime.minute,
+                second: s.arrivalTime.second,
+            } : undefined,
+        departureTime: s.departureTime
+            ? {
+                hour: s.departureTime.hour,
+                minute: s.departureTime.minute,
+                second: s.departureTime.second,
+            } : undefined,
+    };
+    return s;
+};
+
 const applyChangesToStop = (s, changes) => {
     const newStop = { ...s };
     const change = changes.find((c) => c.id === s.id);
@@ -37,4 +58,5 @@ export default {
     confirmActualTime,
     applyChangesToStop,
     stopIsRelevant,
+    setPerformativeTimes,
 };

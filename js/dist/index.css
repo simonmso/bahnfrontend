@@ -3,22 +3,19 @@ body {
     margin: 0;
     padding: 0;
 }
-.container {
-    position: fixed;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
 #clock {
     --hour: 1;
     --minute: 47;
     --second: 10;
     --millisecond: 10;
-    height: 100vh;
-    width: 100vw;
+    max-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding: 3rem;
+    gap: 1rem;
 }
 .dot {
     /* this is all responsible for the dots fading out */
@@ -55,11 +52,17 @@ body {
 .trainBody {
     fill: white;
 }
-canvas {
-    outline-style: solid;
-    outline-color: rgb(43, 43, 43);
-    outline-width: 1px;
-    position: absolute;
-    left: 0;
-    top: 0;
+#svg {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+}
+#info {
+    color: hsl(0 0% 85%);
+    padding: 1rem;
+    font-family: Courier New, monospace;
+    font-size: 1.4rem;
+    font-weight: bold;
+    min-height: 1.4rem;
 }

@@ -17,6 +17,7 @@ const createClock = () => {
             minute: document.getElementById('minuteHand'),
             hour: document.getElementById('hourHand'),
         },
+        info: document.getElementById('info'),
     };
 };
 

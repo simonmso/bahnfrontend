@@ -3,9 +3,28 @@
     <link rel="stylesheet" href="index.css">
 </head>
 <body>
-    <!-- <div id="container"> -->
-        <canvas id="info"></canvas>
-        <canvas id="clock"></canvas>
-        <script src="main.js"></script>
-    <!-- </div> -->
+    <div id="clock">
+        <svg id="svg" viewBox="-1.1 -1.1 2.2 2.2">
+            <defs id="defs">
+                <!-- gradients for stop curves end up here -->
+            </defs>
+            <g id="dotsContainer">
+                <!-- the minute dots end up here -->
+            </g>
+            <g id="handsContainer">
+                <line id="minuteHand" class="hand" x1="0" y1="0" x2="0" y2="0.8"/>
+                <line id="hourHand" class="hand" x1="0" y1="0" x2="0" y2="0.5"/>
+            </g>
+            <g id="stopsContainer">
+                <!-- the stops end up here -->
+            </g>
+            <g id="trainContainer">
+                <!-- the train ends up here -->
+            </g>
+        </svg>
+        <div id="info">
+            <!-- train info ends up here -->
+        </div>
+    </div>
+    <script src="main.js"></script>
 </body>

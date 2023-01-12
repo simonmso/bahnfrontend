@@ -1,13 +1,19 @@
+import { Temporal } from '@js-temporal/polyfill';
 import {
-    angleForMinute, hslForMinute, laterOf, shorterOf,
+    angleForMinute, hslForMinute,
 } from '../helpers';
 
 const refreshStopCurve = (stop, futureDepth, state) => {
-    const startTime = laterOf(stop.arrivalTime, state.now);
+    const useNow = Temporal.ZonedDateTime.compare(state.now, stop.arrivalTime) >= 0;
+    const startTime = useNow ? state.pNow : stop.p.arrivalTime;
+
     const startMinute = startTime.minute + (startTime.second / 60);
 
     const timeTilDep = stop.departureTime.since(state.now);
-    const endTime = state.now.add(shorterOf(futureDepth, timeTilDep));
+    const useDepTime = Temporal.Duration.compare(timeTilDep, { minutes: futureDepth }) <= 0;
+    const endTime = useDepTime
+        ? stop.p.departureTime
+        : { ...state.pNow, minute: state.pNow.minute + futureDepth };
     const endMinute = endTime.minute + (endTime.second / 60);
 
     // refresh curve

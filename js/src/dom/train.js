@@ -61,6 +61,7 @@ export const createTrain = (parent) => {
         L ${point(window.back.theta, window.back.R)}
     `);
     train.classList.add('trainBody');
+    train.setAttribute('hide', true);
     parent.appendChild(train);
     return train;
 };

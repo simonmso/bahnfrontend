@@ -3,17 +3,18 @@ import { createDot } from './dots';
 import refreshStopCurve from './stopCurves';
 
 const createStopDot = (stop, eventType, state) => {
-    const newDot = createDot(stop[eventType].minute);
+    const newDot = createDot(stop.p[eventType].minute);
     newDot.classList.add('stop');
     newDot.setAttribute('r', 0.03);
     newDot.setAttribute('stopId', stop.id);
     newDot.setAttribute('eventType', eventType);
+    newDot.setAttribute('hide', false);
     state.elements.stopsContainer.append(newDot);
     return newDot;
 };
 const refreshStopDot = (stop, eventType) => {
     const dot = stop.elements[eventType];
-    const theta = angleForMinute(stop[eventType].minute);
+    const theta = angleForMinute(stop.p[eventType].minute);
     dot.setAttribute('cx', Math.cos(theta));
     dot.setAttribute('cy', Math.sin(theta));
 };
@@ -22,9 +23,9 @@ const updateStops = (state) => {
 
     stops.forEach((stop) => {
         if (stop.show) {
-            const futureDepth = { minutes: 59 };
+            const futureDepth = 59;
             // show stop curve
-            const stopIsSoon = stopInNext(stop, now, futureDepth, true);
+            const stopIsSoon = stopInNext(stop, now, { minutes: futureDepth }, true);
             if (stop.arrivalTime && stop.departureTime && stopIsSoon) {
                 refreshStopCurve(stop, futureDepth, state);
             }
@@ -41,7 +42,7 @@ const updateStops = (state) => {
 
             ['arrivalTime', 'departureTime'].forEach((eventType) => {
                 // show the stop dot for the specific event if in the next hour
-                if (stop[eventType] && timeInNext(stop[eventType], futureDepth, now)) {
+                if (stop[eventType] && timeInNext(stop[eventType], { minutes: futureDepth }, now)) {
                     if (stop.elements[eventType]) refreshStopDot(stop, eventType);
                     else stop.elements[eventType] = createStopDot(stop, eventType, state);
                 }
