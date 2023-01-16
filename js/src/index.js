@@ -1,9 +1,10 @@
 import { Temporal } from '@js-temporal/polyfill';
-import { getJourney, completeNextHour, rehydrateStops } from './journey';
+// import { getJourney, completeNextHour, rehydrateStops } from './journey';
 import { journeyNotOver, printStops } from './helpers';
 import cfg from './config.json';
 import initializeState from './init';
 import d from './dom';
+import getJourney from './newConsumer';
 
 const main = async () => {
     const state = initializeState();
@@ -39,25 +40,25 @@ const main = async () => {
             state.info = d.getNextInfo(state);
 
             state.animating = true;
-            d.transitionInfo(oldInfo?.text, state.info?.text, state)
-                .then(() => {
-                    state.animating = false;
-                });
+            d.transitionInfo(oldInfo?.text, state.info?.text, state).then(() => {
+                state.animating = false;
+            });
         }
     };
 
     const manageJourney = async () => {
         try {
             refreshTime();
+            state.stops = await getJourney();
             const notOver = journeyNotOver(state);
-            const action = notOver ? completeNextHour(state.stops) : getJourney();
+            // const action = notOver ? completeNextHour(state.stops) : getJourney();
 
-            console.log('old stops', state.stops);
+            // console.log('old stops', state.stops);
 
-            state.stops = await action.then(({ stops, problems }) => {
-                if (problems?.length) state.problems = state.problems.concat(problems);
-                return rehydrateStops(stops);
-            });
+            // state.stops = await action.then(({ stops, problems }) => {
+            //     if (problems?.length) state.problems = state.problems.concat(problems);
+            //     return rehydrateStops(stops);
+            // });
             if (!notOver) cycleInfo();
 
             printStops(state.stops);
