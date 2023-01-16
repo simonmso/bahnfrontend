@@ -5,11 +5,9 @@ for now:
 ### Installing
 `cd js`
 `npm install`
-`npm init @eslint/config`
 
 ### Running
-*(in another tab)* `python3 -m http.server`
 *(if needed, open ports by running the* `wslbridge.ps1` *script in powershell)*
-`npm run build`
+`npm run build && cp -R dist/ ~/projects/bahn/backend/ && echo "Ran at $(date +"%T")"`
 
-then open `http://[ip address of the linux distro]:8000/dist/` in a browser
+then open `http://[ip address of the backend]/` in a browser

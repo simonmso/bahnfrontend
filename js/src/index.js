@@ -4,7 +4,7 @@ import { journeyNotOver, printStops } from './helpers';
 import cfg from './config.json';
 import initializeState from './init';
 import d from './dom';
-import getJourney from './newConsumer';
+import { updateStops } from './newConsumer';
 
 const main = async () => {
     const state = initializeState();
@@ -40,7 +40,7 @@ const main = async () => {
             state.info = d.getNextInfo(state);
 
             state.animating = true;
-            d.transitionInfo(oldInfo?.text, state.info?.text, state).then(() => {
+            d.transitionInfo(oldInfo?.text, state.info?.text, state).finally(() => {
                 state.animating = false;
             });
         }
@@ -49,8 +49,9 @@ const main = async () => {
     const manageJourney = async () => {
         try {
             refreshTime();
-            state.stops = await getJourney();
+            state.stops = await updateStops(state.stops);
             const notOver = journeyNotOver(state);
+
             // const action = notOver ? completeNextHour(state.stops) : getJourney();
 
             // console.log('old stops', state.stops);
@@ -69,9 +70,10 @@ const main = async () => {
         }
     };
 
-    if (!cfg.useDummy) manageJourney();
-    cycleInfo();
     draw();
+    if (!cfg.useDummy) {
+        manageJourney().then(cycleInfo);
+    }
 
     if (!cfg.useDummy) {
         setInterval(() => {

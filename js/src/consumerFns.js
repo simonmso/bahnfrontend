@@ -41,6 +41,8 @@ const nodeToStop = (node) => {
         }
     });
 
+    // a stop can have real === false if it was returned with a problem
+    // check findStopInStation
     newStop.real = true;
     newStop.elements = {};
     newStop.asString = toS(newStop);

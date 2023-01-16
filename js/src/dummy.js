@@ -14,8 +14,6 @@ const names = [
 const stops = names.map((n, i) => ({
     id: `${i}`,
     name: n,
-    show: true,
-    real: true,
     category: 'RE',
     line: '85',
     futureStops: names.slice(i + 1),
@@ -25,7 +23,6 @@ const stops = names.map((n, i) => ({
     departureTime: withs[i][1]
         ? now.add({ hours: add[i] }).with({ minute: withs[i][1], second: 0 })
         : undefined,
-    elements: {},
 }));
 
 // creates a stop that spans the change in hour. Good edge case
