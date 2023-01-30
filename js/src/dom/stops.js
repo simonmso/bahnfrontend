@@ -22,37 +22,35 @@ const updateStops = (state) => {
     const { stops, now } = state;
 
     stops.forEach((stop) => {
-        if (stop.show) {
-            const futureDepth = 59;
-            // show stop curve
-            const stopIsSoon = stopInNext(stop, now, { minutes: futureDepth }, true);
-            if (stop.arrivalTime && stop.departureTime && stopIsSoon) {
-                refreshStopCurve(stop, futureDepth, state);
-            }
-            else if (stop.elements.curve) {
-                stop.elements.curve.remove();
-                stop.elements.curve = undefined;
-                stop.elements.gradient.remove();
-                stop.elements.gradient = undefined;
-                stop.elements.gradientStops.start.remove();
-                stop.elements.gradientStops.start = undefined;
-                stop.elements.gradientStops.end.remove();
-                stop.elements.gradientStops.end = undefined;
-            }
-
-            ['arrivalTime', 'departureTime'].forEach((eventType) => {
-                // show the stop dot for the specific event if in the next hour
-                if (stop[eventType] && timeInNext(stop[eventType], { minutes: futureDepth }, now)) {
-                    if (stop.elements[eventType]) refreshStopDot(stop, eventType);
-                    else stop.elements[eventType] = createStopDot(stop, eventType, state);
-                }
-                // otherwise remove the stop dot
-                else if (stop.elements[eventType]) {
-                    stop.elements[eventType].remove();
-                    stop.elements[eventType] = undefined;
-                }
-            });
+        const futureDepth = 59;
+        // show stop curve
+        const stopIsSoon = stopInNext(stop, now, { minutes: futureDepth }, true);
+        if (stop.arrivalTime && stop.departureTime && stopIsSoon) {
+            refreshStopCurve(stop, futureDepth, state);
         }
+        else if (stop.elements.curve) {
+            stop.elements.curve.remove();
+            stop.elements.curve = undefined;
+            stop.elements.gradient.remove();
+            stop.elements.gradient = undefined;
+            stop.elements.gradientStops.start.remove();
+            stop.elements.gradientStops.start = undefined;
+            stop.elements.gradientStops.end.remove();
+            stop.elements.gradientStops.end = undefined;
+        }
+
+        ['arrivalTime', 'departureTime'].forEach((eventType) => {
+            // show the stop dot for the specific event if in the next hour
+            if (stop[eventType] && timeInNext(stop[eventType], { minutes: futureDepth }, now)) {
+                if (stop.elements[eventType]) refreshStopDot(stop, eventType);
+                else stop.elements[eventType] = createStopDot(stop, eventType, state);
+            }
+            // otherwise remove the stop dot
+            else if (stop.elements[eventType]) {
+                stop.elements[eventType].remove();
+                stop.elements[eventType] = undefined;
+            }
+        });
     });
 };
 

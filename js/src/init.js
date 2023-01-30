@@ -1,6 +1,4 @@
 import { Temporal } from '@js-temporal/polyfill';
-import dummy from './dummy';
-import cfg from './config.json';
 import d from './dom';
 
 const createClock = () => {
@@ -36,7 +34,6 @@ const initializeState = () => {
         second: state.now.second,
         millisecond: state.now.millisecond,
     };
-    if (cfg.useDummy) state.stops = dummy;
 
     d.updateHands(state);
 

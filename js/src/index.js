@@ -1,7 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill';
-// import { getJourney, completeNextHour, rehydrateStops } from './journey';
-import { journeyNotOver, printStops } from './helpers';
-import cfg from './config.json';
+import { printStops } from './helpers';
 import initializeState from './init';
 import d from './dom';
 import { updateStops } from './newConsumer';
@@ -33,35 +31,11 @@ const main = async () => {
         }
     };
 
-    const cycleInfo = () => {
-        if (!state.animating) {
-            refreshTime();
-            const oldInfo = state.info;
-            state.info = d.getNextInfo(state);
-
-            state.animating = true;
-            d.transitionInfo(oldInfo?.text, state.info?.text, state).finally(() => {
-                state.animating = false;
-            });
-        }
-    };
-
     const manageJourney = async () => {
         try {
             refreshTime();
             state.stops = await updateStops(state.stops);
-            const notOver = journeyNotOver(state);
-
-            // const action = notOver ? completeNextHour(state.stops) : getJourney();
-
-            // console.log('old stops', state.stops);
-
-            // state.stops = await action.then(({ stops, problems }) => {
-            //     if (problems?.length) state.problems = state.problems.concat(problems);
-            //     return rehydrateStops(stops);
-            // });
-            if (!notOver) cycleInfo();
-
+            console.log();
             printStops(state.stops);
         }
         catch (e) {
@@ -71,18 +45,15 @@ const main = async () => {
     };
 
     draw();
-    if (!cfg.useDummy) {
-        manageJourney().then(cycleInfo);
-    }
+    manageJourney()
+        .then(() => d.cycleInfo(state));
 
-    if (!cfg.useDummy) {
-        setInterval(() => {
-            manageJourney();
-        }, 1000 * 60 * 1.5);
-    }
+    setInterval(() => {
+        manageJourney();
+    }, 1000 * 60 * 0.5);
 
     setInterval(draw, 300);
-    setInterval(cycleInfo, 30 * 1000);
+    setInterval(() => d.cycleInfo(state), 30 * 1000);
     setInterval(() => {
         console.clear();
         console.log('state.problems', state.problems);
