@@ -1,8 +1,6 @@
 import { Temporal } from '@js-temporal/polyfill';
 import cfg from './config.json';
 
-// TODO: find out which of these are being used
-
 const pad = (n) => n.toString().padStart(2, '0');
 
 export const toS = (s) => {
@@ -76,7 +74,6 @@ export const getRandomKey = (obj) => {
     return keys[randIdx];
 };
 
-// TODO: this should just be part of state
 export const journeyNotOver = (state) => (
     state.stops?.some?.((s) => stopInFuture(s, state.now, true))
 );

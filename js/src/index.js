@@ -9,7 +9,7 @@ const main = async () => {
 
     const refreshTime = () => {
         state.now = Temporal.Now.zonedDateTimeISO();
-        // state.now = state.now.add({ seconds: 50 }); // make the clock run 30 times faster
+        // state.now = state.now.add({ seconds: 7 }); // make the clock run 30 times faster
 
         // for performance reasons, we don't want to always be using the ZonedDateTime.minute method
         // this way, we can call it once and use it anywhere we would now.minute, now.second, etc.

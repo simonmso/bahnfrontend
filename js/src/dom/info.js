@@ -24,13 +24,13 @@ const getTrainInfo = (state) => {
     const last = state.stops.at(-1);
     const destination = last.futureStops?.at?.(-1) || last.name;
     return destination
-        ? { type: 'train', text: `${last.routeId} nach ${destination}` }
+        ? { type: 'train', text: `${last.routeId} to ${destination}` }
         : false;
 };
 
 const getNextStopInfo = (state) => {
     const next = getNextStop(state);
-    return next && { type: 'nextStop', text: `Nächste Halt: ${next.name}` };
+    return next && { type: 'nextStop', text: `Next Stop: ${next.name}` };
 };
 
 export const getNextInfo = (state) => {

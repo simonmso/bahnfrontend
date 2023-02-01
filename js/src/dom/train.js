@@ -2,7 +2,7 @@ import { angleForMinute, journeyNotOver } from '../helpers';
 
 export const createTrain = (parent) => {
     const train = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    const w = 0.06;
+    const w = 0.062;
     const R = 1 + (w / 2);
     const r = 1 - (w / 2);
 
@@ -14,22 +14,22 @@ export const createTrain = (parent) => {
     const noseAngle = turn(1 / 60);
 
     const cpFrontDiff = turn(1 / 90);
-    const cpWideDiff = 0.022;
+    const cpWideDiff = 0.02;
 
     const window = {
         back: {
-            R: 1 + ((w * 0.6) / 2),
-            r: 1 - ((w * 0.6) / 2),
+            R: 1 + ((w * 0.5) / 2),
+            r: 1 - ((w * 0.5) / 2),
             theta: noseAngle * 0.7,
         },
         front: {
-            R: 1 + ((w * 0.4) / 2),
-            r: 1 - ((w * 0.4) / 2),
-            theta: noseAngle * 0.3,
+            R: 1 + ((w * 0.35) / 2),
+            r: 1 - ((w * 0.35) / 2),
+            theta: noseAngle * 0.35,
         },
     };
 
-    const gapWidth = turn(1 / 1000);
+    const gapWidth = turn(1 / 1500);
 
     const point = (theta, radius) => (
         `${Math.cos(-theta) * radius},${Math.sin(-theta) * radius}`

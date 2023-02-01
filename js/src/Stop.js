@@ -32,6 +32,22 @@ class Stop {
             if (this[t]) this[t] = Temporal.ZonedDateTime.from(this[t]);
         });
         this.elements = props.elements || {};
+
+        // preformance-friendly times
+        this.p = {
+            arrivalTime: this.arrivalTime
+                ? {
+                    hour: this.arrivalTime.hour,
+                    minute: this.arrivalTime.minute,
+                    second: this.arrivalTime.second,
+                } : undefined,
+            departureTime: this.departureTime
+                ? {
+                    hour: this.departureTime.hour,
+                    minute: this.departureTime.minute,
+                    second: this.departureTime.second,
+                } : undefined,
+        };
     }
 
     get tripId() {
