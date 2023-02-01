@@ -6,10 +6,14 @@ const updateHands = (state) => {
     const min = now.minute + (now.second / 60) + (now.millisecond / (60 * 1000));
     const thetaM = angleForMinute(min);
     const thetaH = angleForHour(now.hour + (min / 60));
-    elements.hands.minute.setAttribute('x2', 0.8 * Math.cos(thetaM));
-    elements.hands.minute.setAttribute('y2', 0.8 * Math.sin(thetaM));
-    elements.hands.hour.setAttribute('x2', 0.5 * Math.cos(thetaH));
-    elements.hands.hour.setAttribute('y2', 0.5 * Math.sin(thetaH));
+    elements.hands.minute.setAttribute('x1', -0.1 * Math.cos(thetaM));
+    elements.hands.minute.setAttribute('y1', -0.1 * Math.sin(thetaM));
+    elements.hands.minute.setAttribute('x2', 0.9 * Math.cos(thetaM));
+    elements.hands.minute.setAttribute('y2', 0.9 * Math.sin(thetaM));
+    elements.hands.hour.setAttribute('x1', -0.1 * Math.cos(thetaH));
+    elements.hands.hour.setAttribute('y1', -0.1 * Math.sin(thetaH));
+    elements.hands.hour.setAttribute('x2', 0.6 * Math.cos(thetaH));
+    elements.hands.hour.setAttribute('y2', 0.6 * Math.sin(thetaH));
 
     // used for gradient, might delete later
     elements.clock.style = `--hour: ${now.hour};

@@ -2,7 +2,7 @@ import { createTrain, updateTrain } from './train';
 import updateHands from './hands';
 import updateStops from './stops';
 import { createDots, updateDots } from './dots';
-import { getNextInfo, transitionInfo } from './info';
+import { getNextInfo, cycleInfo } from './info';
 
 export default {
     createDots,
@@ -12,5 +12,5 @@ export default {
     createTrain,
     updateTrain,
     getNextInfo,
-    transitionInfo,
+    cycleInfo,
 };

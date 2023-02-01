@@ -75,7 +75,7 @@ export const getRandomKey = (obj) => {
 };
 
 export const journeyNotOver = (state) => (
-    state.stops?.some((s) => s.real && stopInFuture(s, state.now, true))
+    state.stops?.some?.((s) => stopInFuture(s, state.now, true))
 );
 
 export const angleForMinute = (m) => ((m / 60) - 0.25) * 2 * Math.PI;

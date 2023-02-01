@@ -43,14 +43,20 @@ body {
 }
 .curve {
     stroke-width: 0.02;
-    fill: transparent;
 }
 .hand {
     stroke: white;
-    stroke-width: 0.01;
+}
+#minuteHand {
+    stroke-width: 0.02;
+}
+#hourHand {
+    stroke-width: 0.033;
 }
 .trainBody {
     fill: white;
+    stroke: hsl(0, 0%, 9%);
+    stroke-width: 0.005;
 }
 #svg {
     width: auto;
@@ -64,6 +70,6 @@ body {
     font-family: Courier New, monospace;
     font-size: 1.4rem;
     font-weight: bold;
-    min-height: 1.4rem;
+    min-height: 2rem;
     text-align: center;
 }

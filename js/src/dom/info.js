@@ -1,6 +1,14 @@
 import { Temporal } from '@js-temporal/polyfill';
 import { earlierOf, journeyNotOver, stopInFuture } from '../helpers';
 
+// sleep() taken from https://github.com/neatnik/typo/blob/main/typo.js
+// mad respect to that guy
+function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
+
 const getNextStop = ({ stops, now }) => {
     const inFuture = stops?.filter?.((s) => stopInFuture(s, now));
     return inFuture?.length
@@ -13,18 +21,16 @@ const getNextStop = ({ stops, now }) => {
 };
 
 const getTrainInfo = (state) => {
-    const next = getNextStop(state);
-    const destination = next.futureStops?.length
-        ? next.futureStops[next.futureStops.length - 1]
-        : next.name;
-    const cat = next.category || '';
-    const line = next.line || next.number || '';
-    return destination && { type: 'train', text: `${cat} ${line} nach ${destination}` };
+    const last = state.stops.at(-1);
+    const destination = last.futureStops?.at?.(-1) || last.name;
+    return destination
+        ? { type: 'train', text: `${last.routeId} to ${destination}` }
+        : false;
 };
 
 const getNextStopInfo = (state) => {
     const next = getNextStop(state);
-    return next && { type: 'nextStop', text: `Nächste Halt: ${next.name}` };
+    return next && { type: 'nextStop', text: `Next Stop: ${next.name}` };
 };
 
 export const getNextInfo = (state) => {
@@ -38,32 +44,29 @@ export const getNextInfo = (state) => {
     return next;
 };
 
-const rShrink = (current, target, state, rslv) => {
-    state.elements.info.innerText = current;
-    if (current === target) rslv();
-    else setTimeout(() => rShrink(current.slice(0, -2), target, state, rslv), 65);
-};
-const rGrow = (current, target, state, rslv) => {
-    state.elements.info.innerText = current;
-    if (current === target) rslv();
-    else setTimeout(() => rGrow(current + target[current.length], target, state, rslv), 65);
-};
-
-const shrink = (text, state) => new Promise((r) => {
-    rShrink(text, '', state, r);
-});
-const grow = (text, state) => new Promise((r) => {
-    rGrow('', text, state, r);
-});
-
-export const transitionInfo = (oldInfo, newInfo, state) => {
-    if (oldInfo && newInfo) {
-        return shrink(oldInfo, state)
-            .then(() => grow(newInfo, state));
+const shrink = async (elem) => {
+    let buffer = elem.innerText;
+    while (buffer.length > 0) {
+        buffer = buffer.slice(0, -2);
+        elem.innerText = buffer;
+        // eslint-disable-next-line no-await-in-loop
+        await sleep(60);
     }
-    if (oldInfo) return shrink(oldInfo, state);
-    if (newInfo) return grow(newInfo, state);
-    return new Promise((r) => { // this way .then still works
-        r();
-    });
+};
+
+const grow = async (elem, text = '') => {
+    for (let i = 0; i <= text.length; i++) {
+        elem.innerText = text.slice(0, i);
+        // eslint-disable-next-line no-await-in-loop
+        await sleep(60);
+    }
+};
+
+export const cycleInfo = async (state) => {
+    await shrink(state.elements.info);
+
+    state.info = getNextInfo(state);
+    if (state.info?.text) {
+        await grow(state.elements.info, state.info.text);
+    }
 };
