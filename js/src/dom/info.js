@@ -24,7 +24,7 @@ const getTrainInfo = (state) => {
     const last = state.stops.at(-1);
     const destination = last.futureStops?.at?.(-1) || last.name;
     return destination
-        ? { type: 'train', text: `${last.routeId} to ${destination}` }
+        ? { type: 'train', text: `${last.routeId} towards ${destination}` }
         : false;
 };
 
