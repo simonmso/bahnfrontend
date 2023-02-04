@@ -1,21 +1,41 @@
+html {
+    scroll-behavior: smooth;
+}
 body {
-    background-color: hsl(0, 0%, 9%);
+    background-color: hsl(0, 0%, 13%);
     margin: 0;
     padding: 0;
+    color: hsl(0 0% 85%);
+    font-family: sans-serif;
+    font-size: 1.2rem;
+    line-height: 1.2;
+}
+div {
+    /* this somehow fixes a resizing bug */
+    min-height: 1rem;
+}
+.spacer {
+    min-height: 1rem;
+}
+#main {
+    height: 100vh;
+    max-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 2rem;
+    box-sizing: border-box;
 }
 #clock {
     --hour: 1;
     --minute: 47;
     --second: 10;
     --millisecond: 10;
-    max-height: 100vh;
     display: flex;
     justify-content: center;
-    align-items: center;
     flex-direction: column;
-    box-sizing: border-box;
+    align-items: center;
     padding: 3rem;
-    gap: 1rem;
 }
 .dot {
     /* this is all responsible for the dots fading out */
@@ -33,7 +53,7 @@ body {
     );
     --slope: calc(var(--gradSteepness) * -0.01);
     --yint: calc(var(--gradIntercept) * -1 * var(--slope));
-    fill: hsl(0 0% max(9%, min(100%, (((var(--minInFuture) * var(--slope)) + var(--yint)) * 100%))));
+    fill: hsl(0 0% max(13%, min(100%, (((var(--minInFuture) * var(--slope)) + var(--yint)) * 100%))));
 }
 .dot[hide=true] {
     fill: transparent;
@@ -55,21 +75,38 @@ body {
 }
 .trainBody {
     fill: white;
-    stroke: hsl(0, 0%, 9%);
+    stroke: hsl(0, 0%, 13%);
     stroke-width: 0.005;
 }
-#svg {
-    width: auto;
-    height: auto;
-    max-width: 100%;
-    max-height: 100%;
-}
 #info {
-    color: hsl(0 0% 85%);
     padding: 1rem;
     font-family: Courier New, monospace;
     font-size: 1.4rem;
     font-weight: bold;
     min-height: 2rem;
-    text-align: center;
+}
+#toAboutContainer {
+    display: flex;
+    justify-content: center;
+    min-height: fit-content;
+}
+a {
+    padding: 0.5rem 1rem;
+    background: hsl(0, 0%, 15%);
+    color: hsl(0, 0%, 50%);
+    border-radius: 1rem;
+}
+a:hover {
+    background: hsl(0, 0%, 25%);
+    color: hsl(0, 0%, 75%);
+}
+#about {
+    padding: 6rem;
+    background: hsl(0, 50%, 30%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+p {
+    max-width: 50rem;
 }

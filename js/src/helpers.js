@@ -85,7 +85,7 @@ export const angleForHour = (h) => ((h / 12) - 0.25) * 2 * Math.PI;
 // xIntercept is the distance (in minutes) the first black dot should be
 const getLightnessFunc = (steepness, xIntercept) => {
     const yInt = xIntercept * steepness;
-    return (minute) => Math.max(9, Math.min(100, ((minute * -steepness) + yInt)));
+    return (minute) => Math.max(13, Math.min(100, ((minute * -steepness) + yInt)));
 };
 
 // mimics a conic gradient

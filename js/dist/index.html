@@ -4,28 +4,35 @@
     <title>train</title>
 </head>
 <body>
-    <div id="clock">
-        <svg id="svg" viewBox="-1.1 -1.1 2.2 2.2">
-            <defs id="defs">
-                <!-- gradients for stop curves end up here -->
-            </defs>
-            <g id="dotsContainer">
-                <!-- the minute dots end up here -->
-            </g>
-            <g id="handsContainer">
-                <line id="minuteHand" class="hand" x1="0" y1="0" x2="0" y2="0.8"/>
-                <line id="hourHand" class="hand" x1="0" y1="0" x2="0" y2="0.5"/>
-            </g>
-            <g id="stopsContainer">
-                <!-- the stops end up here -->
-            </g>
-            <g id="trainContainer">
-                <!-- the train ends up here -->
-            </g>
-        </svg>
-        <div id="info">
-            <!-- train info ends up here -->
+    <div id="main">
+        <div class="spacer"></div>
+        <div id="clock">
+            <svg viewBox="-1.1 -1.1 2.2 2.2">
+                <defs id="defs">
+                    <!-- gradients for stop curves end up here -->
+                </defs>
+                <g id="dotsContainer">
+                    <!-- the minute dots end up here -->
+                </g>
+                <g id="handsContainer">
+                    <line id="minuteHand" class="hand" x1="0" y1="0" x2="0" y2="0.8"/>
+                    <line id="hourHand" class="hand" x1="0" y1="0" x2="0" y2="0.5"/>
+                </g>
+                <g id="stopsContainer">
+                    <!-- the stops end up here -->
+                </g>
+                <g id="trainContainer">
+                    <!-- the train ends up here -->
+                </g>
+            </svg>
+            <div id="info">
+                <!-- train info ends up here -->
+            </div>
         </div>
+        <div id="toAboutContainer"><a href="#about">what is this?</a></div>
+    </div>
+    <div id="about">
+        <p>"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."</p>
     </div>
     <script src="main.js"></script>
 </body>
