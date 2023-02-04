@@ -18,8 +18,8 @@ div {
     min-height: 1rem;
 }
 #main {
-    height: 100vh;
-    max-height: 100vh;
+    height: 100svh;
+    max-height: 100svh;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -35,7 +35,7 @@ div {
     justify-content: center;
     flex-direction: column;
     align-items: center;
-    padding: 3rem;
+    padding: 3rem 0;
 }
 .dot {
     /* this is all responsible for the dots fading out */
@@ -84,6 +84,7 @@ div {
     font-size: 1.4rem;
     font-weight: bold;
     min-height: 2rem;
+    text-align: center;
 }
 #toAboutContainer {
     display: flex;
@@ -101,7 +102,7 @@ div {
     color: hsl(0, 0%, 75%);
 }
 #about {
-    padding: 3rem 6rem 6rem 6rem;
+    padding: 3rem 0rem 6rem 0rem;
     background: hsl(0, 50%, 30%);
     display: flex;
     flex-direction: column;
