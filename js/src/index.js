@@ -21,6 +21,8 @@ const main = async () => {
         };
     };
 
+    // WORKING ON: liscence
+
     const draw = () => {
         refreshTime();
         d.updateHands(state);
