@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack"
   },
-  "author": "",
+  "author": "simonmso",
   "license": "ISC",
   "devDependencies": {
     "eslint": "^8.31.0",

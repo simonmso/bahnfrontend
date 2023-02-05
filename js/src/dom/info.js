@@ -2,7 +2,7 @@ import { Temporal } from '@js-temporal/polyfill';
 import { earlierOf, journeyNotOver, stopInFuture } from '../helpers';
 
 // sleep() taken from https://github.com/neatnik/typo/blob/main/typo.js
-// mad respect to that guy
+// I really appreciate that guy's work
 function sleep(ms) {
     return new Promise((resolve) => {
         setTimeout(resolve, ms);
@@ -63,10 +63,14 @@ const grow = async (elem, text = '') => {
 };
 
 export const cycleInfo = async (state) => {
-    await shrink(state.elements.info);
+    if (!state.animating) {
+        state.animating = true;
+        await shrink(state.elements.info);
 
-    state.info = getNextInfo(state);
-    if (state.info?.text) {
-        await grow(state.elements.info, state.info.text);
+        state.info = getNextInfo(state);
+        if (state.info?.text) {
+            await grow(state.elements.info, state.info.text);
+        }
+        state.animating = false;
     }
 };

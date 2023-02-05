@@ -1,5 +1,4 @@
 import { Temporal } from '@js-temporal/polyfill';
-import { printStops } from './helpers';
 import initializeState from './init';
 import d from './dom';
 import { updateStops } from './newConsumer';
@@ -9,7 +8,6 @@ const main = async () => {
 
     const refreshTime = () => {
         state.now = Temporal.Now.zonedDateTimeISO();
-        // state.now = state.now.add({ seconds: 7 }); // make the clock run 30 times faster
 
         // for performance reasons, we don't want to always be using the ZonedDateTime.minute method
         // this way, we can call it once and use it anywhere we would now.minute, now.second, etc.
@@ -20,8 +18,6 @@ const main = async () => {
             millisecond: state.now.millisecond,
         };
     };
-
-    // WORKING ON: liscence
 
     const draw = () => {
         refreshTime();
@@ -37,8 +33,7 @@ const main = async () => {
         try {
             refreshTime();
             state.stops = await updateStops(state.stops);
-            console.log();
-            printStops(state.stops);
+            d.cycleInfo(state);
         }
         catch (e) {
             console.log('failed building', e);
@@ -47,15 +42,10 @@ const main = async () => {
     };
 
     draw();
-    manageJourney()
-        .then(() => d.cycleInfo(state));
-
-    setInterval(() => {
-        manageJourney();
-    }, 1000 * 60 * 0.5);
+    manageJourney();
 
     setInterval(draw, 300);
-    setInterval(() => d.cycleInfo(state), 30 * 1000);
+    setInterval(manageJourney, 30 * 1000);
     setInterval(() => {
         console.clear();
         console.log('state.problems', state.problems);
