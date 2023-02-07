@@ -1,5 +1,5 @@
 .vscode
 /js/package-lock.json
 /js/dist/main.js
-.eslintrc*
+# .eslintrc*
 node_modules
