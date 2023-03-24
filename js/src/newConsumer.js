@@ -2,7 +2,7 @@ import Stop from './Stop';
 import { removeStop } from './dom/stopFns';
 
 const getJourney = () => {
-    const url = '/api/journey';
+    const url = 'http://bahnvoyage.net/api/journey';
     return fetch(url)
         .then((resp) => resp.json())
         .then((stops) => stops.map((s) => new Stop(s)));

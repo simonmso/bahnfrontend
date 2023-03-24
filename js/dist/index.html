@@ -1,12 +1,16 @@
 <!DOCTYPE html>
-<meta charset="utf8"/>
-<meta name="application-name" content="train"/>
-<meta name="author" content="simonmso"/>
-<meta name="viewport" content="initial-scale=1, width=device-width"/>
-<meta name="description" content="A clock that follows a random german train along its journey"/>
+<meta charset="utf8" />
+<meta name="application-name" content="train" />
+<meta name="author" content="simonmso" />
+<meta name="viewport" content="initial-scale=1, width=device-width" />
+<meta name="description" content="A clock that follows a random german train along its journey" />
 <head>
-    <link rel="stylesheet" href="index.css">
-    <title>train</title>
+    <link rel="stylesheet" href="index.css" />
+    <title>Clock</title>
+    <link rel="icon" href="favicon-192.png" sizes="192x192" />
+    <link rel="icon" href="favicon-180.png" sizes="180x180" />
+    <link rel="icon" href="favicon-128.png" sizes="128x128" />
+    <link rel="icon" href="favicon-32.png" sizes="32x32" />
 </head>
 <body>
     <div id="main">
@@ -20,8 +24,8 @@
                     <!-- the minute dots end up here -->
                 </g>
                 <g id="handsContainer">
-                    <line id="minuteHand" class="hand" x1="0" y1="0" x2="0" y2="0.8"/>
-                    <line id="hourHand" class="hand" x1="0" y1="0" x2="0" y2="0.5"/>
+                    <line id="minuteHand" class="hand" x1="0" y1="0" x2="0" y2="0.8" />
+                    <line id="hourHand" class="hand" x1="0" y1="0" x2="0" y2="0.5" />
                 </g>
                 <g id="stopsContainer">
                     <!-- the stops end up here -->
@@ -38,14 +42,21 @@
     </div>
     <div id="about">
         <div>
-            <p class="notice"><i>Beta V0.9.0. If you encounter a bug, feel free to
-                <a href="https://github.com/simonmso/bahnfrontend/issues/new/choose">file an issue!</a>
-            </i></p>
-            <p>This site finds a random train in Germany and follows it along its journey.
+            <p class="notice">
+                <i
+                    >Beta V0.9.0. If you encounter a bug, feel free to
+                    <a href="https://github.com/simonmso/bahnfrontend/issues/new/choose"
+                        >file an issue!</a
+                    >
+                </i>
+            </p>
+            <p>
+                This site finds a random train in Germany and follows it along its journey.
                 Connected dots mark minutes the train will be at a station (updated in real time).
-                It is intended to serve as a gentle escape from the toils of everyday life;
-                one is encouraged to picture oneself on the train, swaying gently as the scenery glides by.
-                It can also be used to tell the time.</p>
+                It is intended to serve as a gentle escape from the toils of everyday life; one is
+                encouraged to picture oneself on the train, swaying gently as the scenery glides by.
+                It can also be used to tell the time.
+            </p>
             <p>Created by <a href="https://github.com/simonmso">@simonmso</a>.</p>
         </div>
     </div>

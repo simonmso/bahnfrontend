@@ -23,9 +23,9 @@ const initializeState = () => {
     const state = {
         elements: createClock(),
         problems: [],
-        // now: Temporal.Now.zonedDateTimeISO(),
+        now: Temporal.Now.zonedDateTimeISO(),
         // now: Temporal.Now.zonedDateTimeISO().with({ minute: 53, second: 32 }),
-        now: Temporal.Now.zonedDateTimeISO().with({ minute: 2, second: 32 }),
+        // now: Temporal.Now.zonedDateTimeISO().with({ hour: 14, minute: 29, second: 2 }),
         // now: Temporal.Now.zonedDateTimeISO(),
     };
     state.pNow = {
