@@ -2,7 +2,8 @@
 import { Temporal } from '@js-temporal/polyfill';
 import initializeState from './init';
 import d from './dom';
-import { updateStops } from './newConsumer';
+import { updateStops } from './consumer';
+import config from './config.json';
 
 const main = async () => {
     const state = initializeState();
@@ -45,8 +46,8 @@ const main = async () => {
     draw();
     manageJourney();
 
-    setInterval(draw, 300);
-    setInterval(manageJourney, 30 * 1000);
+    setInterval(draw, config.tickPeriod_ms);
+    setInterval(manageJourney, config.journeyUpdatePeriod_s * 1000);
     setInterval(() => {
         console.clear();
         console.log('state.problems', state.problems);

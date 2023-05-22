@@ -2,5 +2,8 @@
     "dots": {
         "gradientSteepness": 7,
         "gradientIntercept": 50
-    }
+    },
+    "tickPeriod_ms": 300,
+    "journeyUpdatePeriod_s": 30,
+    "apiUrl": "http://bahnvoyage.net/api/journey"
 }
